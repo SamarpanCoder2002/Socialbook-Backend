@@ -102,3 +102,26 @@ exports.signout = (req, res) => {
       });
     });
 };
+
+exports.isSignedIn = (req, res, next) => {
+  const auth = getAuth();
+
+  if (!auth.currentUser) {
+    return res.status(401).json({
+      code: 401,
+      error: "UnAuthorized",
+    });
+  }
+
+  auth.currentUser
+    .getIdToken(true)
+    .then((token) => {
+      next();
+    })
+    .catch((error) => {
+      return res.status(401).json({
+        message: "Sign in Unsuccessful",
+      });
+    });
+};
+
