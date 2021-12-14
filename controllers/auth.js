@@ -65,7 +65,7 @@ exports.signin = (req, res) => {
             return res.status(200).json({
               token,
               message: "Sign in successful",
-              user: user,
+              user: user.uid,
             });
           });
         } else {
