@@ -8,7 +8,6 @@ const {
 } = require("../controllers/user");
 
 router.get("/isUserPresent", isSignedIn, isUserPresent, userNotPresent);
-
 router.post("/createUserAccount", isSignedIn, isUserPresent, createUserAccount);
 
 module.exports = router;
