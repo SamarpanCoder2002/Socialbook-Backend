@@ -11,14 +11,95 @@ const {
   query,
 } = require("firebase/firestore");
 
+exports.userNotPresent = (req, res) => {
+  return res.status(404).json({
+    message: "User Not Present",
+  });
+}
+
 /// Create User Account
-exports.createUserAccount = (req, res) => {
+exports.createUserAccount = async (req, res) => {
   const auth = getAuth();
   const userRealId = auth.currentUser.uid;
-  const saltRounds = 10;
 
-  return res.json({
-    userRealId,
+  const db = getFirestore();
+
+  /// NOTE: User Account Created Successfully
+  await setDoc(doc(db, User.usersCollection, userRealId), {
+    email: `${auth.currentUser.email}`,
+  });
+  await setDoc(
+    doc(db, User.usersCollection, userRealId, "connections", "suggestion"),
+    {}
+  );
+  await setDoc(
+    doc(db, User.usersCollection, userRealId, "connections", "connected"),
+    {}
+  );
+  await setDoc(
+    doc(
+      db,
+      User.usersCollection,
+      userRealId,
+      "connections",
+      "invitation",
+      "received",
+      "empty"
+    ),
+    {}
+  );
+  await setDoc(
+    doc(
+      db,
+      User.usersCollection,
+      userRealId,
+      "connections",
+      "invitation",
+      "sent",
+      "empty"
+    ),
+    {}
+  );
+
+  await setDoc(
+    doc(db, User.usersCollection, userRealId, "profile", "ownPost"),
+    {}
+  );
+  await setDoc(
+    doc(db, User.usersCollection, userRealId, "profile", "activity"),
+    {}
+  );
+  await setDoc(
+    doc(db, User.usersCollection, userRealId, "profile", "ownProfileData"),
+    {
+      name: req.body.name,
+      profilePic: req.body.profilePic,
+      description: req.body.description,
+      interests: req.body.interests,
+    }
+  );
+
+  await setDoc(
+    doc(db, User.usersCollection, userRealId, "post-feed", "welcome"),
+    {}
+  );
+  await setDoc(
+    doc(
+      db,
+      User.usersCollection,
+      userRealId,
+      "notification",
+      "your-account-created"
+    ),
+    {}
+  );
+  await setDoc(
+    doc(db, User.usersCollection, userRealId, "chat-collection", "self-chat"),
+    {}
+  );
+
+  return res.status(200).json({
+    message: "User Account Created Successfully",
   });
 };
 
@@ -41,7 +122,7 @@ exports.isUserPresent = (req, res, next) => {
         querySnapShot.docs.forEach((doc) => {
           if (doc.exists) {
             res.status(200).json({
-              message: "User is present",
+              message: "User already present",
             });
           } else {
             next();
