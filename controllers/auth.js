@@ -1,4 +1,6 @@
 const { validationResult } = require("express-validator");
+var jwt = require("jsonwebtoken");
+var expressJwt = require("express-jwt");
 
 const {
   getAuth,
@@ -57,17 +59,29 @@ exports.signin = (req, res) => {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         const user = userCredential.user;
-
         if (user.emailVerified) {
-          user.getIdToken(true).then((token) => {
-            res.cookie(process.env.AUTH_TOKEN, token);
+          /// Create Token
+          const token = jwt.sign({ id: user.uid }, process.env.SECRET);
 
-            return res.status(200).json({
-              token,
-              message: "Sign in successful",
-              user: user.uid,
-            });
+          res.cookie(process.env.AUTH_TOKEN, token, {
+            expire: new Date() + 9999,
           });
+
+          return res.status(200).json({
+            token,
+            message: "Sign in successful",
+            user: user.uid,
+          });
+
+          // user.getIdToken(false).then((token) => {
+          //   res.cookie(process.env.AUTH_TOKEN, token);
+
+          //   return res.status(200).json({
+          //     token,
+          //     message: "Sign in successful",
+          //     user: user.uid,
+          //   });
+          // });
         } else {
           return res.status(422).json({
             error: "Email not verified",
@@ -103,25 +117,33 @@ exports.signout = (req, res) => {
     });
 };
 
-exports.isSignedIn = (req, res, next) => {
-  const auth = getAuth();
+exports.isSignedIn = expressJwt({
+  secret: process.env.SECRET,
+  userProperty: "auth",
+  algorithms: ["HS256"],
+});
 
-  if (!auth.currentUser) {
-    return res.status(401).json({
-      code: 401,
-      error: "UnAuthorized",
-    });
-  }
+// exports.isSignedIn = (req, res, next) => {
+//   const auth = getAuth();
 
-  auth.currentUser
-    .getIdToken(true)
-    .then((token) => {
-      next();
-    })
-    .catch((error) => {
-      return res.status(401).json({
-        message: "Sign in Unsuccessful",
-      });
-    });
-};
+//   if (!auth.currentUser) {
+//     return res.status(401).json({
+//       code: 401,
+//       error: "UnAuthorized",
+//     });
+//   }
+
+//   auth.currentUser
+//     .getIdToken(true)
+//     .then((token) => {
+//       next();
+//     })
+//     .catch((error) => {
+//       return res.status(401).json({
+//         message: "Sign in Unsuccessful",
+//       });
+//     });
+// };
+
+
 
