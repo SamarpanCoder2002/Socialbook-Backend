@@ -10,8 +10,6 @@ const {
   browserSessionPersistence,
   sendEmailVerification,
 } = require("firebase/auth");
-const { getDoc, getFirestore, doc } = require("firebase/firestore");
-const { User } = require("./types/auth-prototype");
 
 exports.signup = (req, res) => {
   const errors = validationResult(req);

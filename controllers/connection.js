@@ -9,29 +9,16 @@ const {
   query,
   deleteDoc,
 } = require("firebase/firestore");
-const { User } = require("./types/auth-prototype");
+const { User, ConnectionType } = require("./types/auth-prototype");
 
 exports.connectionRequest = async (req, res) => {
-  const currentUser = req.body.currentUser;
-  const oppositeUser = req.body.oppositeUser;
-
   const db = getFirestore();
 
   /// Adding under sent request section
   await setDoc(
-    doc(
-      db,
-      User.usersCollection,
-      currentUser.id,
-      "connections",
-      "invitation",
-      "sent",
-      oppositeUser.id
-    ),
+    doc(db, User.usersCollection, req.auth.id, "connections", "list"),
     {
-      name: oppositeUser.name,
-      description: oppositeUser.description,
-      profilePic: oppositeUser.profilePic,
+      [req.body.oppositeUser.id]: ConnectionType.sent,
     }
   );
 
@@ -40,16 +27,12 @@ exports.connectionRequest = async (req, res) => {
     doc(
       db,
       User.usersCollection,
-      oppositeUser.id,
+      req.body.oppositeUser.id,
       "connections",
-      "invitation",
-      "received",
-      currentUser.id
+      "list"
     ),
     {
-      name: currentUser.name,
-      description: currentUser.description,
-      profilePic: currentUser.profilePic,
+      [req.auth.id]: ConnectionType.received,
     }
   );
 
@@ -59,79 +42,31 @@ exports.connectionRequest = async (req, res) => {
 };
 
 exports.acceptRequest = async (req, res) => {
-  try {
-    const acceptHolder = req.body.acceptHolder;
-    const requestHolder = req.body.requestHolder;
+  const db = getFirestore();
 
-    const db = getFirestore();
+  await setDoc(
+    doc(db, User.usersCollection, req.auth.id, "connections", "list"),
+    {
+      [req.body.requestHolder.id]: ConnectionType.connected,
+    },
+    { merge: true }
+  );
 
-    await deleteDoc(
-      doc(
-        db,
-        User.usersCollection,
-        acceptHolder.id,
-        "connections",
-        "invitation",
-        "received",
-        requestHolder.id
-      )
-    );
+  await setDoc(
+    doc(
+      db,
+      User.usersCollection,
+      req.body.requestHolder.id,
+      "connections",
+      "list"
+    ),
+    {
+      [req.auth.id]: ConnectionType.connected,
+    },
+    { merge: true }
+  );
 
-    await setDoc(
-      doc(
-        db,
-        User.usersCollection,
-        acceptHolder.id,
-        "connections",
-        "connected"
-      ),
-      {
-        [requestHolder.id]: {
-          name: requestHolder.name,
-          description: requestHolder.description,
-          profilePic: requestHolder.profilePic,
-        },
-      },
-      { merge: true }
-    );
-
-    await deleteDoc(
-      doc(
-        db,
-        User.usersCollection,
-        requestHolder.id,
-        "connections",
-        "invitation",
-        "sent",
-        acceptHolder.id
-      )
-    );
-
-    await setDoc(
-      doc(
-        db,
-        User.usersCollection,
-        requestHolder.id,
-        "connections",
-        "connected"
-      ),
-      {
-        [acceptHolder.id]: {
-          name: acceptHolder.name,
-          description: acceptHolder.description,
-          profilePic: acceptHolder.profilePic,
-        },
-      },
-      { merge: true }
-    );
-
-    return res.status(200).json({
-      message: "Connection Request Accepted",
-    });
-  } catch (err) {
-    console.log("Error in acceptRequest", err);
-    return res.status(500).json({
-      message: "Something went wrong",
-    });
-  }
+  return res.status(200).json({
+    message: "Connection Request Accepted",
+  });
 };
