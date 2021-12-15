@@ -10,6 +10,8 @@ const {
   browserSessionPersistence,
   sendEmailVerification,
 } = require("firebase/auth");
+const { getDoc, getFirestore, doc } = require("firebase/firestore");
+const { User } = require("./types/auth-prototype");
 
 exports.signup = (req, res) => {
   const errors = validationResult(req);
@@ -72,16 +74,6 @@ exports.signin = (req, res) => {
             message: "Sign in successful",
             user: user.uid,
           });
-
-          // user.getIdToken(false).then((token) => {
-          //   res.cookie(process.env.AUTH_TOKEN, token);
-
-          //   return res.status(200).json({
-          //     token,
-          //     message: "Sign in successful",
-          //     user: user.uid,
-          //   });
-          // });
         } else {
           return res.status(422).json({
             error: "Email not verified",
@@ -123,27 +115,22 @@ exports.isSignedIn = expressJwt({
   algorithms: ["HS256"],
 });
 
-// exports.isSignedIn = (req, res, next) => {
-//   const auth = getAuth();
+exports.isAuthenticated = (req, res, next) => {
+  const db = getFirestore();
 
-//   if (!auth.currentUser) {
-//     return res.status(401).json({
-//       code: 401,
-//       error: "UnAuthorized",
-//     });
-//   }
+  getDoc(doc(db, User.usersCollection, req.body.uid)).then((docSnapShot) => {
+    if (!docSnapShot.exists()) {
+      return res.status(422).json({
+        error: "User not found",
+      });
+    }
 
-//   auth.currentUser
-//     .getIdToken(true)
-//     .then((token) => {
-//       next();
-//     })
-//     .catch((error) => {
-//       return res.status(401).json({
-//         message: "Sign in Unsuccessful",
-//       });
-//     });
-// };
-
-
-
+    if (req.body.uid === req.auth.id) {
+      next();
+    } else {
+      return res.status(401).json({
+        error: "User not Authenticated",
+      });
+    }
+  });
+};
