@@ -79,11 +79,19 @@ exports.signin = (req, res) => {
         }
       })
       .catch((error) => {
-        return res.status(422).json({
-          error:
-            error.message === "Firebase: Error (auth/wrong-password)."
-              ? "Wrong Password"
-              : error.message,
+        let errorMessage = error.message;
+
+        if (error.message === "Firebase: Error (auth/wrong-password).")
+          errorMessage = "Wrong Password";
+        else if (error.message === "Firebase: Error (auth/user-not-found).")
+          errorMessage = "User not found";
+        else if (error.message === "Firebase: Error (auth/invalid-email).")
+          errorMessage = "Invalid Email";
+        else if (error.message === "Firebase: Error (auth/wrong-password).")
+          errorMessage = "Wrong Password";
+
+        return res.status(404).json({
+          error: errorMessage,
         });
       });
   });

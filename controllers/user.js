@@ -1,5 +1,5 @@
 const { getAuth } = require("firebase/auth");
-const { User } = require("./types/auth-prototype");
+const { User } = require("./types/types");
 const {
   getFirestore,
   collection,
