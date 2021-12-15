@@ -116,21 +116,11 @@ exports.isSignedIn = expressJwt({
 });
 
 exports.isAuthenticated = (req, res, next) => {
-  const db = getFirestore();
-
-  getDoc(doc(db, User.usersCollection, req.body.uid)).then((docSnapShot) => {
-    if (!docSnapShot.exists()) {
-      return res.status(422).json({
-        error: "User not found",
-      });
-    }
-
-    if (req.body.uid === req.auth.id) {
-      next();
-    } else {
-      return res.status(401).json({
-        error: "User not Authenticated",
-      });
-    }
-  });
+  if (req.body && req.auth && req.body.uid === req.auth.id) {
+    next();
+  } else {
+    return res.status(401).json({
+      error: "User not Authenticated",
+    });
+  }
 };
