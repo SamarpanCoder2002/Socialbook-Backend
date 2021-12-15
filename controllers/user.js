@@ -28,10 +28,12 @@ exports.createUserAccount = async (req, res) => {
   await setDoc(doc(db, User.usersCollection, userRealId), {
     email: `${auth.currentUser.email}`,
   });
-  await setDoc(
-    doc(db, User.usersCollection, userRealId, "connections", "suggestion"),
-    {}
-  );
+
+  // await setDoc(
+  //   doc(db, User.usersCollection, userRealId, "connections", "suggestion"),
+  //   {}
+  // );
+  
   await setDoc(
     doc(db, User.usersCollection, userRealId, "connections", "connected"),
     {}
