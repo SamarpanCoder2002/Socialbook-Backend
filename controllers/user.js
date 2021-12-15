@@ -15,7 +15,7 @@ exports.userNotPresent = (req, res) => {
   return res.status(404).json({
     message: "User Not Present",
   });
-}
+};
 
 /// Create User Account
 exports.createUserAccount = async (req, res) => {
@@ -27,78 +27,75 @@ exports.createUserAccount = async (req, res) => {
   /// NOTE: User Account Created Successfully
   await setDoc(doc(db, User.usersCollection, userRealId), {
     email: `${auth.currentUser.email}`,
+    name: req.body.name,
+    profilePic: req.body.profilePic,
+    description: req.body.description,
+    interests: req.body.interests,
   });
 
+  /// TODO: Will Create Automatically at connected place
   // await setDoc(
-  //   doc(db, User.usersCollection, userRealId, "connections", "suggestion"),
+  //   doc(db, User.usersCollection, userRealId, "connections", "connected"),
   //   {}
   // );
+
+  /// TODO: Will Create Automatically at invitation Received place
+  // await setDoc(
+  //   doc(
+  //     db,
+  //     User.usersCollection,
+  //     userRealId,
+  //     "connections",
+  //     "invitation",
+  //     "received",
+  //     "empty"
+  //   ),
+  //   {}
+  // );
+
+  /// TODO: Will Create Automatically at Connection Request place
+  // await setDoc(
+  //   doc(
+  //     db,
+  //     User.usersCollection,
+  //     userRealId,
+  //     "connections",
+  //     "invitation",
+  //     "sent",
+  //     "empty"
+  //   ),
+  //   {}
+  // );
+
   
-  await setDoc(
-    doc(db, User.usersCollection, userRealId, "connections", "connected"),
-    {}
-  );
-  await setDoc(
-    doc(
-      db,
-      User.usersCollection,
-      userRealId,
-      "connections",
-      "invitation",
-      "received",
-      "empty"
-    ),
-    {}
-  );
-  await setDoc(
-    doc(
-      db,
-      User.usersCollection,
-      userRealId,
-      "connections",
-      "invitation",
-      "sent",
-      "empty"
-    ),
-    {}
-  );
+  /// TODO: Below things will create at correct place respectively
+  // await setDoc(
+  //   doc(db, User.usersCollection, userRealId, "profile", "ownPost"),
+  //   {}
+  // );
+  // await setDoc(
+  //   doc(db, User.usersCollection, userRealId, "profile", "activity"),
+  //   {}
+  // );
 
-  await setDoc(
-    doc(db, User.usersCollection, userRealId, "profile", "ownPost"),
-    {}
-  );
-  await setDoc(
-    doc(db, User.usersCollection, userRealId, "profile", "activity"),
-    {}
-  );
-  await setDoc(
-    doc(db, User.usersCollection, userRealId, "profile", "ownProfileData"),
-    {
-      name: req.body.name,
-      profilePic: req.body.profilePic,
-      description: req.body.description,
-      interests: req.body.interests,
-    }
-  );
-
-  await setDoc(
-    doc(db, User.usersCollection, userRealId, "post-feed", "welcome"),
-    {}
-  );
-  await setDoc(
-    doc(
-      db,
-      User.usersCollection,
-      userRealId,
-      "notification",
-      "your-account-created"
-    ),
-    {}
-  );
-  await setDoc(
-    doc(db, User.usersCollection, userRealId, "chat-collection", "self-chat"),
-    {}
-  );
+  // await setDoc(
+  //   doc(db, User.usersCollection, userRealId, "post-feed", "welcome"),
+  //   {}
+  // );
+  // await setDoc(
+  //   doc(
+  //     db,
+  //     User.usersCollection,
+  //     userRealId,
+  //     "notification",
+  //     "your-account-created"
+  //   ),
+  //   {}
+  // );
+  // await setDoc(
+  //   doc(db, User.usersCollection, userRealId, "chat-collection", "self-chat"),
+  //   {}
+  // );
 
   return res.status(200).json({
     message: "User Account Created Successfully",
