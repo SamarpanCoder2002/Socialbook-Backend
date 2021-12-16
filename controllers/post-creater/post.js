@@ -64,6 +64,7 @@ exports.createSlidePost = async (req, res) => {};
 // ** Handle Post Addition in Database **
 const addPostToDB = async (formattedPostData, uid, res) => {
   try {
+    formattedPostData.postHolderId = uid;
     const db = getFirestore();
 
     const postDataRef = await createAndStorePost(db, formattedPostData);

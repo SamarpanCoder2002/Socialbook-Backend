@@ -4,6 +4,7 @@ exports.User = {
 
 exports.Post = {
   postsCollection: "posts-collection",
+  postHolderId: "postHolderId",
 };
 
 exports.ConnectionType = {
