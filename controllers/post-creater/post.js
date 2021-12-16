@@ -1,4 +1,4 @@
-const { TextPost } = require("../../models/post");
+const { TextPost, VideoPost, PDFPost } = require("../../models/post");
 const { getFirestore } = require("firebase/firestore");
 
 const {
@@ -16,6 +16,24 @@ exports.createTextPost = async (req, res) => {
 
   return await addPostToDB(formattedPostData, req.auth.id, res);
 };
+
+exports.createVideoPost = async (req, res) => {
+  const { text, video } = req.body;
+
+  const videoPost = new VideoPost(text, video);
+  const formattedPostData = videoPost.getFormattedData();
+
+  return await addPostToDB(formattedPostData, req.auth.id, res);
+}
+
+exports.createDocumentPost = async (req, res) => {
+  const { text, pdfSrc } = req.body;
+
+  const pdfPost = new PDFPost(text, pdfSrc);
+  const formattedPostData = pdfPost.getFormattedData();
+
+  return await addPostToDB(formattedPostData, req.auth.id, res);
+}
 
 // ** Handle Post Addition in Database **
 const addPostToDB = async (formattedPostData, uid, res) => {
