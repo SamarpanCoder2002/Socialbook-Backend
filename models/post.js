@@ -63,3 +63,40 @@ class PDFPost {
   };
 }
 exports.PDFPost = PDFPost;
+
+class PollPost {
+  constructor(text, question, options) {
+    this.text = text;
+    this.question = question;
+    this.options = this.makeInitialResults(options);
+  }
+
+  makeInitialResults = (options) => {
+    const resultsInitial = [];
+
+    options.forEach((option) => {
+      resultsInitial.push({
+        text: option,
+        votes: 0,
+      });
+    });
+
+    return resultsInitial;
+  };
+
+  getFormattedData = () => {
+    return {
+      type: PostTypes.Poll,
+      content: {
+        text: this.text,
+        question: this.question,
+        prevResults: this.options,
+      },
+      engagement: {
+        likes: [],
+        comments: [],
+      },
+    };
+  };
+}
+exports.PollPost = PollPost;

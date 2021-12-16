@@ -1,4 +1,4 @@
-const { TextPost, VideoPost, PDFPost } = require("../../models/post");
+const { TextPost, VideoPost, PDFPost, PollPost } = require("../../models/post");
 const { getFirestore } = require("firebase/firestore");
 
 const {
@@ -24,7 +24,7 @@ exports.createVideoPost = async (req, res) => {
   const formattedPostData = videoPost.getFormattedData();
 
   return await addPostToDB(formattedPostData, req.auth.id, res);
-}
+};
 
 exports.createDocumentPost = async (req, res) => {
   const { text, pdfSrc } = req.body;
@@ -33,7 +33,30 @@ exports.createDocumentPost = async (req, res) => {
   const formattedPostData = pdfPost.getFormattedData();
 
   return await addPostToDB(formattedPostData, req.auth.id, res);
-}
+};
+
+/// TODO: This is not completed.. Do it when connect to frontend
+exports.createImagePost = async (req, res) => {
+  console.log(req.body);
+
+  const { text, image } = req.body;
+
+  console.log("Here");
+  console.log(image);
+
+  res.json({
+    message: "Image Post Created Successfully",
+  });
+};
+
+exports.createPollPost = async (req, res) => {
+  const { text, question, options } = req.body;
+
+  const pollPost = new PollPost(text, question, options);
+  const formattedPostData = pollPost.getFormattedData();
+
+  return await addPostToDB(formattedPostData, req.auth.id, res);
+};
 
 // ** Handle Post Addition in Database **
 const addPostToDB = async (formattedPostData, uid, res) => {

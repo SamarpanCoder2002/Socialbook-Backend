@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const cors = require("cors");
 const { initializeApp } = require("firebase/app");
 
 const app = express();
@@ -31,6 +32,7 @@ initializeApp(firebaseConfig);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(cors());
 
 // My Routes
 app.use("/api", authRoutes);
