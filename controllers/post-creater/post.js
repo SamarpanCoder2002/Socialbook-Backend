@@ -35,6 +35,15 @@ exports.createDocumentPost = async (req, res) => {
   return await addPostToDB(formattedPostData, req.auth.id, res);
 };
 
+exports.createPollPost = async (req, res) => {
+  const { text, question, options } = req.body;
+
+  const pollPost = new PollPost(text, question, options);
+  const formattedPostData = pollPost.getFormattedData();
+
+  return await addPostToDB(formattedPostData, req.auth.id, res);
+};
+
 /// TODO: This is not completed.. Do it when connect to frontend
 exports.createImagePost = async (req, res) => {
   console.log(req.body);
@@ -49,14 +58,8 @@ exports.createImagePost = async (req, res) => {
   });
 };
 
-exports.createPollPost = async (req, res) => {
-  const { text, question, options } = req.body;
-
-  const pollPost = new PollPost(text, question, options);
-  const formattedPostData = pollPost.getFormattedData();
-
-  return await addPostToDB(formattedPostData, req.auth.id, res);
-};
+/// TODO: This is not completed.. Do it when connect to frontend
+exports.createSlidePost = async (req, res) => {};
 
 // ** Handle Post Addition in Database **
 const addPostToDB = async (formattedPostData, uid, res) => {
