@@ -11,6 +11,7 @@ const app = express();
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const connectionRoutes = require("./routes/connection");
+const profileRoutes = require("./routes/profile");
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
@@ -34,6 +35,7 @@ app.use(cookieParser());
 app.use("/api", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api", connectionRoutes);
+app.use("/api", profileRoutes);
 
 /// App Listening
 app.listen(8000, () => {
