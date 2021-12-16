@@ -12,6 +12,7 @@ const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const connectionRoutes = require("./routes/connection");
 const profileRoutes = require("./routes/profile");
+const postRoutes = require("./routes/post");
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
@@ -36,6 +37,7 @@ app.use("/api", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api", connectionRoutes);
 app.use("/api", profileRoutes);
+app.use("/api", postRoutes);
 
 /// App Listening
 app.listen(8000, () => {
