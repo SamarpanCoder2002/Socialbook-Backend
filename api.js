@@ -14,6 +14,7 @@ const userRoutes = require("./routes/user");
 const connectionRoutes = require("./routes/connection");
 const profileRoutes = require("./routes/profile");
 const postRoutes = require("./routes/post");
+const notificationRoutes = require("./routes/notification");
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
@@ -40,6 +41,32 @@ app.use("/api", userRoutes);
 app.use("/api", connectionRoutes);
 app.use("/api", profileRoutes);
 app.use("/api", postRoutes);
+app.use("/api", notificationRoutes);
+
+// TODO: Socket IO Implementation
+// const server = require('http').createServer(app);
+
+// const io = require('socket.io')(server, {
+//   transports: ['websocket', 'polling']
+// });
+
+// let tick = 0;
+// // 1. listen for socket connections
+// io.on('connection', client => {
+//   setInterval(() => {
+//     // 2. every second, emit a 'cpu' event to user
+//     os.cpuUsage(cpuPercent => {
+//       client.emit('cpu', {
+//         name: tick++,
+//         value: cpuPercent
+//       });
+//     });
+//   }, 1000);
+// });
+
+// server.listen(8000, () => {
+//   console.log('listening on *:8000');
+// });
 
 /// App Listening
 app.listen(8000, () => {

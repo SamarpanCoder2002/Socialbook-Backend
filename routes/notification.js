@@ -1,11 +1,8 @@
 const express = require("express");
 const { isSignedIn, isAuthenticated } = require("../controllers/auth");
+const { getAllNotifications } = require("../controllers/notification");
 const router = express.Router();
 
-router.get("/getAllNotifications", isSignedIn, isAuthenticated, (req, res) => {
-  res.json({
-    message: "Get All Notification Route implemented",
-  });
-});
+router.get("/getAllNotifications", isSignedIn, isAuthenticated, getAllNotifications);
 
 module.exports = router;
