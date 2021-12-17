@@ -33,7 +33,7 @@ exports.createAndStorePost = async (db, formattedPostData) => {
     [Date.now()]: postDocRef.id,
   };
 
-  return postDataRef;
+  return [postDocRef, postDataRef];
 };
 
 // ** Adding Post to current account my-post section **

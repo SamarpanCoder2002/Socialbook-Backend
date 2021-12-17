@@ -7,6 +7,7 @@ const {
   collectingConnectedUsersId,
   addingPostIdConnectedUsersAndOwnAcc,
 } = require("./common");
+const { addNotification } = require("../notification");
 
 exports.createTextPost = async (req, res) => {
   const { text } = req.body;
@@ -67,7 +68,10 @@ const addPostToDB = async (formattedPostData, uid, res) => {
     formattedPostData.postHolderId = uid;
     const db = getFirestore();
 
-    const postDataRef = await createAndStorePost(db, formattedPostData);
+    const [postDocRef, postDataRef] = await createAndStorePost(
+      db,
+      formattedPostData
+    );
     await addPostRefUnderCurrentAccount(db, uid, postDataRef);
     const connectedUserData = await collectingConnectedUsersId(db, uid);
 
@@ -77,6 +81,12 @@ const addPostToDB = async (formattedPostData, uid, res) => {
       db,
       connectedUserData,
       postDataRef
+    );
+
+    addNotification(
+      "😮 Post Published Successfully",
+      `/post/${postDocRef.id}`,
+      uid
     );
 
     return res.status(200).json({

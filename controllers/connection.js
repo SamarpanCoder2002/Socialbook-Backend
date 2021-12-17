@@ -6,12 +6,13 @@ const {
   collection,
   getDocs,
 } = require("firebase/firestore");
+const { addNotification } = require("./notification");
 const { User, ConnectionType } = require("./types/types");
 
 exports.connectionRequest = async (req, res) => {
   const db = getFirestore();
 
-  /// Adding under sent request section
+  /// ** Adding under sent request section
   await setDoc(
     doc(db, User.usersCollection, req.auth.id, "connections", "list"),
     {
@@ -20,7 +21,7 @@ exports.connectionRequest = async (req, res) => {
     { merge: true }
   );
 
-  /// Adding under receive request section
+  /// ** Adding under receive request section
   await setDoc(
     doc(
       db,
@@ -33,6 +34,19 @@ exports.connectionRequest = async (req, res) => {
       [req.auth.id]: ConnectionType.received,
     },
     { merge: true }
+  );
+
+  await addNotification("Connection Request Sent", `/connection`, req.auth.id, {
+    prevDesignSet: { prevIndex: 2, invitationSetInitialIndex: 1 },
+  });
+
+  await addNotification(
+    "Someone Sent you a Connection Request",
+    `/connection`,
+    req.body.oppositeUser.id,
+    {
+      prevDesignSet: { prevIndex: 2, invitationSetInitialIndex: 0 },
+    }
   );
 
   return res.status(200).json({
@@ -63,6 +77,24 @@ exports.acceptRequest = async (req, res) => {
       [req.auth.id]: ConnectionType.connected,
     },
     { merge: true }
+  );
+
+  addNotification(
+    "😇 Congrats! You have now new connection",
+    `/connection`,
+    req.auth.id,
+    {
+      prevDesignSet: { prevIndex: 1 },
+    }
+  );
+
+  addNotification(
+    "😇 Congrats! You have now new connection",
+    `/connection`,
+    req.body.requestHolder.id,
+    {
+      prevDesignSet: { prevIndex: 1 },
+    }
   );
 
   return res.status(200).json({

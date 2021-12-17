@@ -1,4 +1,5 @@
 const { getFirestore, getDoc, doc, setDoc } = require("firebase/firestore");
+const { addNotification } = require("./notification");
 const { User } = require("./types/types");
 
 exports.updateProfileData = (req, res) => {
@@ -19,6 +20,13 @@ exports.updateProfileData = (req, res) => {
           },
           { merge: true }
         );
+
+        addNotification(
+          "Your Profile Updated Successfully 🎉",
+          `/${uid}/profile`,
+          uid
+        );
+
         return res.status(200).json({
           message: "Profile Updated",
         });
@@ -43,7 +51,8 @@ exports.getProfileData = (req, res) => {
   getDoc(doc(db, User.usersCollection, uid))
     .then(async (docRef) => {
       if (docRef.data()) {
-        const { name, description, profilePic, interests, email } = docRef.data();
+        const { name, description, profilePic, interests, email } =
+          docRef.data();
 
         const data = {
           name,

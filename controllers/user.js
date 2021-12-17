@@ -33,6 +33,12 @@ exports.createUserAccount = async (req, res) => {
     interests: req.body.interests,
   });
 
+  addNotification(
+    "😍 Your Account Created Successfully",
+    `/feed`,
+    userRealId
+  );
+
   return res.status(200).json({
     message: "User Account Created Successfully",
   });
