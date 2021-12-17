@@ -5,6 +5,9 @@ exports.User = {
 exports.Post = {
   postsCollection: "posts-collection",
   postHolderId: "postHolderId",
+  engagement: "engagement",
+  likes: "likes",
+  comments: "comments",
 };
 
 exports.ConnectionType = {
@@ -25,8 +28,6 @@ exports.PostTypes = {
 exports.AccountThings = {
   connections: "connections",
   posts: "my-posts",
-  likes: "likes",
-  comments: "comments",
   shares: "shares",
   notifications: "notifications",
   connectionsList: "list",

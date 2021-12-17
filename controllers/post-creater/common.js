@@ -14,6 +14,21 @@ exports.createAndStorePost = async (db, formattedPostData) => {
     formattedPostData
   );
 
+  await setDoc(
+    doc(db, Post.postsCollection, postDocRef.id, Post.engagement, Post.likes),
+    {}
+  );
+  await setDoc(
+    doc(
+      db,
+      Post.postsCollection,
+      postDocRef.id,
+      Post.engagement,
+      Post.comments
+    ),
+    {}
+  );
+
   const postDataRef = {
     [Date.now()]: postDocRef.id,
   };

@@ -11,10 +11,6 @@ class TextPost {
       content: {
         text: this.text,
       },
-      engagement: {
-        likes: [],
-        comments: [],
-      },
     };
   };
 }
@@ -33,10 +29,6 @@ class VideoPost {
         text: this.text,
         video: this.video,
       },
-      engagement: {
-        likes: [],
-        comments: [],
-      },
     };
   };
 }
@@ -54,10 +46,6 @@ class PDFPost {
       content: {
         text: this.text,
         pdfSrc: this.pdfSrc,
-      },
-      engagement: {
-        likes: [],
-        comments: [],
       },
     };
   };
@@ -91,10 +79,6 @@ class PollPost {
         text: this.text,
         question: this.question,
         prevResults: this.options,
-      },
-      engagement: {
-        likes: [],
-        comments: [],
       },
     };
   };
