@@ -1,0 +1,132 @@
+const {
+  getFirestore,
+  getDoc,
+  doc,
+  collection,
+  getDocs,
+  query,
+} = require("firebase/firestore");
+const { getProfileData } = require("../profile");
+const { User, AccountThings, Post } = require("../types/types");
+
+// ** Feed Data Fetching Controller **
+exports.getFeedData = async (req, res) => {
+  const db = getFirestore();
+
+  let page = req.query.page ?? 0;
+
+  if (page !== 0) {
+    page = Number(page);
+    if (page < 0) page = 0;
+    else page--;
+  }
+
+  const collectedPostRef = await getPaginatedPostRefLimit(
+    db,
+    page * 5,
+    req.auth.id
+  );
+
+  const actualModifiedPostData = await getAllFeedPostDataInformation(
+    req.auth.id,
+    collectedPostRef
+  );
+
+  res.json({
+    message: "Feed Data",
+    data: actualModifiedPostData,
+  });
+};
+
+// ** Limit Post Ref for infinite scroll/pagination **
+const getPaginatedPostRefLimit = async (db, startPoint, uid) => {
+  const docRef = await getDoc(
+    doc(
+      db,
+      User.usersCollection,
+      uid,
+      AccountThings.feed,
+      AccountThings.feedCollection
+    )
+  ).catch((err) => {});
+
+  if (docRef.exists()) {
+    const data = docRef.data();
+    const allPostRef = Object.keys(data).map((key) => [Number(key), data[key]]);
+    allPostRef.sort((a, b) => b[0] - a[0]);
+
+    const modifiedPostRef = allPostRef.map((postRefContainer) => {
+      return postRefContainer[1];
+    });
+
+    return modifiedPostRef.slice(
+      startPoint,
+      startPoint ? startPoint + 5 : startPoint + 2
+    );
+  }
+};
+
+// ** Get All Feed Post Data Information **
+const getAllFeedPostDataInformation = async (uid, collectedPostRef) => {
+  const actualModifiedPostData = [];
+
+  for (let i = 0; i < collectedPostRef.length; i++) {
+    const postData = await getPostData(collectedPostRef[i]);
+    if (postData) {
+      const take = await postHolderDataInclusion(uid, postData);
+      actualModifiedPostData.push(take);
+    }
+  }
+
+  return actualModifiedPostData;
+};
+
+// ** Post Holder Data Inclusion **
+const postHolderDataInclusion = async (uid, postData) => {
+  const response = await getProfileData(undefined, postData.postHolderId);
+
+  response.code !== 200
+    ? (postData.postHolderData = {})
+    : (postData.postHolderData = response.data);
+
+  return postData;
+};
+
+// ** Post Data Fetching from Post Container **
+const getPostData = async (postRef) => {
+  const db = getFirestore();
+
+  const postData = await getDoc(doc(db, Post.postsCollection, postRef)).catch(
+    (err) => {
+      console.log("Error in getPostData: ", err);
+    }
+  );
+
+  if (postData.data()) {
+    const postDataModified = postData.data();
+    return await engagementInclusion(db, postDataModified, postRef);
+  }
+};
+
+// ** Post Engagament Size Inclusion **
+const engagementInclusion = async (db, postDataModified, postRef) => {
+  postDataModified.engagement = {};
+
+  const engagementSnapShot = await getDocs(
+    query(collection(db, Post.postsCollection, postRef, Post.engagement))
+  );
+
+  const engagement = engagementSnapShot.docs;
+
+  for (let i = 0; i < engagement.length; i++) {
+    if (engagement[i].data()) {
+      const data = engagement[i].data();
+      const allRef = Object.keys(data).map((key) => [data[key]]);
+
+      postDataModified[Post.engagement][engagement[i].id] = allRef.length;
+    } else {
+      postDataModified[Post.engagement][engagement[i].id] = 0;
+    }
+  }
+  return postDataModified;
+};

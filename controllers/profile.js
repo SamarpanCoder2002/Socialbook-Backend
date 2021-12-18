@@ -43,40 +43,47 @@ exports.updateProfileData = (req, res) => {
     });
 };
 
-exports.getProfileData = (req, res) => {
-  const { uid } = req.body;
+exports.profileDataCollection = async (req, res) => {
+  const response = await this.getProfileData(req.auth.id, req.body.targetProfileId);
 
+  return res.status(response.code).json(response);
+};
+
+exports.getProfileData = async ( authId, requiredProfileId) => {
   const db = getFirestore();
 
-  getDoc(doc(db, User.usersCollection, uid))
-    .then(async (docRef) => {
-      if (docRef.data()) {
-        const { name, description, profilePic, interests, email } =
-          docRef.data();
-
-        const data = {
-          name,
-          description,
-          profilePic,
-        };
-
-        if (req.auth.id === uid) {
-          data.interests = interests;
-          data.email = email;
-        }
-
-        return res.status(200).json({
-          data: data,
-        });
-      }
-      return res.status(404).json({
-        message: "User Not Found",
-      });
-    })
-    .catch((err) => {
+  const docRef = await getDoc(doc(db, User.usersCollection, requiredProfileId)).catch(
+    (err) => {
       console.log("error in getProfileData", err);
-      return res.status(500).json({
+      return {
+        code: 500,
         message: "Internal Server Error",
-      });
-    });
+      };
+    }
+  );
+
+  if (docRef.data()) {
+    const { name, description, profilePic, interests, email } = docRef.data();
+
+    const data = {
+      name,
+      description,
+      profilePic,
+    };
+
+    if (authId === requiredProfileId) {
+      data.interests = interests;
+      data.email = email;
+    }
+
+    return {
+      code: 200,
+      data: data,
+    };
+  }
+
+  return {
+    code: 404,
+    message: "User Not Found",
+  };
 };

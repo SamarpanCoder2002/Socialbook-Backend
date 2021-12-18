@@ -33,6 +33,7 @@ exports.AccountThings = {
   connectionsList: "list",
   postsCollection: "collection",
   feed: "feed",
+  feedCollection: "collection",
   notification: "notification",
   notificationList: "notification-list",
 };
