@@ -36,32 +36,32 @@ exports.getFeedData = async (req, res) => {
   });
 };
 
-exports.getMyOwnPosts = async (req, res) => {
-  const db = getFirestore();
+// exports.getMyOwnPosts = async (req, res) => {
+//   const db = getFirestore();
 
-  let page = req.query.page ?? 0;
+//   let page = req.query.page ?? 0;
 
-  if (page !== 0) {
-    page = Number(page);
-    if (page < 0) page = 0;
-    else page--;
-  }
+//   if (page !== 0) {
+//     page = Number(page);
+//     if (page < 0) page = 0;
+//     else page--;
+//   }
 
-  const collectedPostRef = await getPaginatedPostRefLimit(
-    db,
-    page * 5,
-    req.auth.id
-  );
+//   const collectedPostRef = await getPaginatedPostRefLimit(
+//     db,
+//     page * 5,
+//     req.auth.id
+//   );
 
-  const actualModifiedPostData = await getAllFeedPostDataInformation(
-    collectedPostRef
-  );
+//   const actualModifiedPostData = await getAllFeedPostDataInformation(
+//     collectedPostRef
+//   );
 
-  res.json({
-    message: "Feed Data",
-    data: actualModifiedPostData,
-  });
-};
+//   res.json({
+//     message: "Feed Data",
+//     data: actualModifiedPostData,
+//   });
+// };
 
 // ** Limit Post Ref for infinite scroll/pagination **
 const getPaginatedPostRefLimit = async (db, page, uid) => {
