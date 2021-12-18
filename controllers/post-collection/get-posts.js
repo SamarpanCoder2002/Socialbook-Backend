@@ -28,7 +28,6 @@ exports.getFeedData = async (req, res) => {
   );
 
   const actualModifiedPostData = await getAllFeedPostDataInformation(
-    req.auth.id,
     collectedPostRef
   );
 
@@ -55,9 +54,9 @@ const getPaginatedPostRefLimit = async (db, startPoint, uid) => {
     const allPostRef = Object.keys(data).map((key) => [Number(key), data[key]]);
     allPostRef.sort((a, b) => b[0] - a[0]);
 
-    const modifiedPostRef = allPostRef.map((postRefContainer) => {
-      return postRefContainer[1];
-    });
+    const modifiedPostRef = allPostRef.map(
+      (postRefContainer) => postRefContainer[1]
+    );
 
     return modifiedPostRef.slice(
       startPoint,
@@ -67,14 +66,18 @@ const getPaginatedPostRefLimit = async (db, startPoint, uid) => {
 };
 
 // ** Get All Feed Post Data Information **
-const getAllFeedPostDataInformation = async (uid, collectedPostRef) => {
+const getAllFeedPostDataInformation = async (collectedPostRef) => {
   const actualModifiedPostData = [];
+  const userDataSet = {};
 
   for (let i = 0; i < collectedPostRef.length; i++) {
     const postData = await getPostData(collectedPostRef[i]);
     if (postData) {
-      const take = await postHolderDataInclusion(uid, postData);
-      actualModifiedPostData.push(take);
+      userDataSet[postData.postHolderId]
+        ? (postData.postHolderData = userDataSet[postData.postHolderId])
+        : await postHolderDataInclusion(postData, userDataSet);
+
+      actualModifiedPostData.push(postData);
     }
   }
 
@@ -82,14 +85,14 @@ const getAllFeedPostDataInformation = async (uid, collectedPostRef) => {
 };
 
 // ** Post Holder Data Inclusion **
-const postHolderDataInclusion = async (uid, postData) => {
+const postHolderDataInclusion = async (postData, userDataSet) => {
   const response = await getProfileData(undefined, postData.postHolderId);
 
-  response.code !== 200
-    ? (postData.postHolderData = {})
-    : (postData.postHolderData = response.data);
-
-  return postData;
+  if (response.code !== 200) postData.postHolderData = {};
+  else {
+    postData.postHolderData = response.data;
+    userDataSet[postData.postHolderId] = response.data;
+  }
 };
 
 // ** Post Data Fetching from Post Container **
@@ -119,13 +122,13 @@ const engagementInclusion = async (db, postDataModified, postRef) => {
   const engagement = engagementSnapShot.docs;
 
   for (let i = 0; i < engagement.length; i++) {
-    if (engagement[i].data()) {
+    if (engagement[i].data() && Object.keys(engagement[i].data()).length > 0) {
       const data = engagement[i].data();
-      const allRef = Object.keys(data).map((key) => [data[key]]);
+      const allRef = Object.keys(data).map((key) => data[key]);
 
-      postDataModified[Post.engagement][engagement[i].id] = allRef.length;
+      postDataModified[Post.engagement][engagement[i].id] = allRef.reverse();
     } else {
-      postDataModified[Post.engagement][engagement[i].id] = 0;
+      postDataModified[Post.engagement][engagement[i].id] = [];
     }
   }
   return postDataModified;
