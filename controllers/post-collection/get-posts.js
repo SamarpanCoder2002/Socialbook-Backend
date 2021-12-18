@@ -13,6 +13,32 @@ const { User, AccountThings, Post } = require("../types/types");
 exports.getFeedData = async (req, res) => {
   const db = getFirestore();
 
+  let page = req.query.page ?? 1;
+
+  if (page !== 0) {
+    page = Number(page);
+    if (page < 1) page = 1;
+  }
+
+  const collectedPostRef = await getPaginatedPostRefLimit(
+    db,
+    page,
+    req.auth.id
+  );
+
+  const actualModifiedPostData = await getAllFeedPostDataInformation(
+    collectedPostRef
+  );
+
+  res.json({
+    message: "Feed Data",
+    data: actualModifiedPostData,
+  });
+};
+
+exports.getMyOwnPosts = async (req, res) => {
+  const db = getFirestore();
+
   let page = req.query.page ?? 0;
 
   if (page !== 0) {
@@ -38,7 +64,7 @@ exports.getFeedData = async (req, res) => {
 };
 
 // ** Limit Post Ref for infinite scroll/pagination **
-const getPaginatedPostRefLimit = async (db, startPoint, uid) => {
+const getPaginatedPostRefLimit = async (db, page, uid) => {
   const docRef = await getDoc(
     doc(
       db,
@@ -58,10 +84,10 @@ const getPaginatedPostRefLimit = async (db, startPoint, uid) => {
       (postRefContainer) => postRefContainer[1]
     );
 
-    return modifiedPostRef.slice(
-      startPoint,
-      startPoint ? startPoint + 5 : startPoint + 2
-    );
+    // ** First Page only take two posts and after that take 4 posts **
+    if (page === 1) return modifiedPostRef.slice(0, 2);
+    page = ((page - 2) * 2 + 1) * 2;
+    return modifiedPostRef.slice(page, page + 4);
   }
 };
 
@@ -107,6 +133,7 @@ const getPostData = async (postRef) => {
 
   if (postData.data()) {
     const postDataModified = postData.data();
+    postDataModified.postId = postRef;
     return await engagementInclusion(db, postDataModified, postRef);
   }
 };
