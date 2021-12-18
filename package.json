@@ -2,7 +2,7 @@
   "name": "socialbook-backend",
   "version": "1.0.0",
   "description": "Backend for Socialbook Web app",
-  "main": "api.js",
+  "main": "app.js",
   "scripts": {
     "start": "nodemon api.js"
   },
