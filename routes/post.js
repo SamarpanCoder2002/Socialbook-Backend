@@ -9,7 +9,10 @@ const {
   createPollPost,
   createSlidePost,
 } = require("../controllers/post-collection/create-post");
-const { getFeedData } = require("../controllers/post-collection/get-posts");
+const {
+  getFeedPosts,
+  getCurrentAccountPosts,
+} = require("../controllers/post-collection/get-posts");
 
 router.post("/createTextPost", isSignedIn, isAuthenticated, createTextPost);
 router.post("/createVideoPost", isSignedIn, isAuthenticated, createVideoPost);
@@ -25,6 +28,8 @@ router.post("/createPollPost", isSignedIn, isAuthenticated, createPollPost);
 router.post("/createImagePost", createImagePost);
 router.post("/createSlidePost", createSlidePost);
 
-router.get("/feedData", isSignedIn, isAuthenticated, getFeedData);
+// ** Pass two query with request || page and feed || if feed is true then take data from feed else take data from own-posts
+router.get("/getFeedPosts", isSignedIn, isAuthenticated, getFeedPosts);
+router.get("/getMyPosts", isSignedIn, isAuthenticated, getCurrentAccountPosts);
 
 module.exports = router;

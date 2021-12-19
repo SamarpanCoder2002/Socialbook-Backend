@@ -10,12 +10,21 @@ const { getProfileData } = require("../profile");
 const { User, AccountThings, Post } = require("../types/types");
 
 // ** Feed Data Fetching Controller **
-exports.getFeedData = async (req, res) => {
+exports.getFeedPosts = async (req, res) =>
+  await getPosts(req.query.page ?? 1, true, res, req.auth.id);
+
+// ** Current Account Created Post Fetching Controller **
+exports.getCurrentAccountPosts = async (req, res) =>
+  await getPosts(req.query.page ?? 1, false, res, req.auth.id);
+
+
+  
+
+// ** Manage to take all posts **
+const getPosts = async (page, feed, res, authId) => {
   const db = getFirestore();
 
-  let page = req.query.page ?? 1;
-
-  if (page !== 0) {
+  if (page !== 1) {
     page = Number(page);
     if (page < 1) page = 1;
   }
@@ -23,54 +32,36 @@ exports.getFeedData = async (req, res) => {
   const collectedPostRef = await getPaginatedPostRefLimit(
     db,
     page,
-    req.auth.id
+    authId,
+    feed ? AccountThings.feed : AccountThings.posts
   );
 
-  const actualModifiedPostData = await getAllFeedPostDataInformation(
-    collectedPostRef
-  );
+  if (collectedPostRef && collectedPostRef.length > 0) {
+    const actualModifiedPostData = await getAllFeedPostDataInformation(
+      collectedPostRef,
+      feed
+    );
 
-  res.json({
-    message: "Feed Data",
-    data: actualModifiedPostData,
-  });
+    return res.json({
+      message: "Feed Data",
+      data: actualModifiedPostData,
+    });
+  } else {
+    return res.json({
+      message: "Feed Data",
+      data: [],
+    });
+  }
 };
 
-// exports.getMyOwnPosts = async (req, res) => {
-//   const db = getFirestore();
-
-//   let page = req.query.page ?? 0;
-
-//   if (page !== 0) {
-//     page = Number(page);
-//     if (page < 0) page = 0;
-//     else page--;
-//   }
-
-//   const collectedPostRef = await getPaginatedPostRefLimit(
-//     db,
-//     page * 5,
-//     req.auth.id
-//   );
-
-//   const actualModifiedPostData = await getAllFeedPostDataInformation(
-//     collectedPostRef
-//   );
-
-//   res.json({
-//     message: "Feed Data",
-//     data: actualModifiedPostData,
-//   });
-// };
-
 // ** Limit Post Ref for infinite scroll/pagination **
-const getPaginatedPostRefLimit = async (db, page, uid) => {
+const getPaginatedPostRefLimit = async (db, page, uid, subCollection) => {
   const docRef = await getDoc(
     doc(
       db,
       User.usersCollection,
       uid,
-      AccountThings.feed,
+      subCollection,
       AccountThings.feedCollection
     )
   ).catch((err) => {});
@@ -92,16 +83,21 @@ const getPaginatedPostRefLimit = async (db, page, uid) => {
 };
 
 // ** Get All Feed Post Data Information **
-const getAllFeedPostDataInformation = async (collectedPostRef) => {
+const getAllFeedPostDataInformation = async (
+  collectedPostRef,
+  postHolderDataRequired
+) => {
   const actualModifiedPostData = [];
   const userDataSet = {};
 
   for (let i = 0; i < collectedPostRef.length; i++) {
     const postData = await getPostData(collectedPostRef[i]);
     if (postData) {
-      userDataSet[postData.postHolderId]
-        ? (postData.postHolderData = userDataSet[postData.postHolderId])
-        : await postHolderDataInclusion(postData, userDataSet);
+      if (postHolderDataRequired) {
+        userDataSet[postData.postHolderId]
+          ? (postData.postHolderData = userDataSet[postData.postHolderId])
+          : await postHolderDataInclusion(postData, userDataSet);
+      }
 
       actualModifiedPostData.push(postData);
     }
