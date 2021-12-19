@@ -17,9 +17,6 @@ exports.getFeedPosts = async (req, res) =>
 exports.getCurrentAccountPosts = async (req, res) =>
   await getPosts(req.query.page ?? 1, false, res, req.auth.id);
 
-
-  
-
 // ** Manage to take all posts **
 const getPosts = async (page, feed, res, authId) => {
   const db = getFirestore();

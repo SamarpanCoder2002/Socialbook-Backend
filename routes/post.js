@@ -10,6 +10,10 @@ const {
   createSlidePost,
 } = require("../controllers/post-collection/create-post");
 const {
+  insertLove,
+  insertComment,
+} = require("../controllers/post-collection/engagement-inclusion");
+const {
   getFeedPosts,
   getCurrentAccountPosts,
 } = require("../controllers/post-collection/get-posts");
@@ -28,8 +32,17 @@ router.post("/createPollPost", isSignedIn, isAuthenticated, createPollPost);
 router.post("/createImagePost", createImagePost);
 router.post("/createSlidePost", createSlidePost);
 
-// ** Pass two query with request || page and feed || if feed is true then take data from feed else take data from own-posts
+// ** For Get Feed and Own Posts **
 router.get("/getFeedPosts", isSignedIn, isAuthenticated, getFeedPosts);
 router.get("/getMyPosts", isSignedIn, isAuthenticated, getCurrentAccountPosts);
+
+// ** For Engagement Inclusion **
+router.post("/postInsertLove/:postId", isSignedIn, isAuthenticated, insertLove);
+router.post(
+  "/postInsertComment/:postId",
+  isSignedIn,
+  isAuthenticated,
+  insertComment
+);
 
 module.exports = router;
