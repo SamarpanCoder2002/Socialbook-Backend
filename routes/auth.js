@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { check } = require("express-validator");
-const { signup, signin, signout, isSignedIn, isAuthenticated } = require("../controllers/auth");
+const { signup, signin, signout, isSignedIn, isAuthenticated, googleSignInWithProvider } = require("../controllers/auth");
 
 router.post(
   "/signup",
@@ -24,6 +24,8 @@ router.post(
   ],
   signin
 );
+
+router.post("/googleSignIn", googleSignInWithProvider);
 
 router.post("/testing", isSignedIn, isAuthenticated, (req, res) => {
   return res.json({

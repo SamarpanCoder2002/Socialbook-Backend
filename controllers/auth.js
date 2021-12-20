@@ -9,6 +9,11 @@ const {
   createUserWithEmailAndPassword,
   browserSessionPersistence,
   sendEmailVerification,
+  GoogleAuthProvider,
+  signInWithCredential,
+  signInWithPopup,
+  signInWithCustomToken,
+  signInWithRedirect,
 } = require("firebase/auth");
 
 exports.signup = (req, res) => {
@@ -58,6 +63,8 @@ exports.signin = (req, res) => {
   setPersistence(auth, browserSessionPersistence).then(() => {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
+        console.log(userCredential);
+
         const user = userCredential.user;
         if (user.emailVerified) {
           /// Create Token
@@ -95,6 +102,42 @@ exports.signin = (req, res) => {
         });
       });
   });
+};
+
+exports.googleSignInWithProvider = (req, res) => {
+  const auth = getAuth();
+
+  signInWithCredential(
+    auth,
+    GoogleAuthProvider.credential(req.body.idToken, req.body.accessToken)
+  )
+    .then((userCredential) => {
+      const user = userCredential.user;
+      if (user.emailVerified) {
+        const token = jwt.sign({ id: user.uid }, process.env.SECRET);
+
+        res.cookie(process.env.AUTH_TOKEN, token, {
+          expire: new Date() + 9999,
+        });
+
+        return res.status(200).json({
+          token,
+          message: "Sign in successful",
+          user: user.uid,
+        });
+      } else {
+        return res.status(422).json({
+          error: "Email not verified",
+        });
+      }
+    })
+    .catch((error) => {
+      console.log("error in google sign in", error);
+      res.status(500).json({
+        code: 500,
+        error: "Internal Server Error",
+      });
+    });
 };
 
 exports.signout = (req, res) => {
