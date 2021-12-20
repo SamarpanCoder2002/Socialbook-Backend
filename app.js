@@ -15,6 +15,7 @@ const connectionRoutes = require("./routes/connection");
 const profileRoutes = require("./routes/profile");
 const postRoutes = require("./routes/post");
 const notificationRoutes = require("./routes/notification");
+const messagingRoutes = require("./routes/messaging");
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
@@ -42,6 +43,7 @@ app.use("/api", connectionRoutes);
 app.use("/api", profileRoutes);
 app.use("/api", postRoutes);
 app.use("/api", notificationRoutes);
+app.use("/api", messagingRoutes);
 
 // TODO: Socket IO Implementation
 // const server = require('http').createServer(app);

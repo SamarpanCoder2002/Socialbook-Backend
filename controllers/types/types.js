@@ -2,6 +2,10 @@ exports.User = {
   usersCollection: "users-collection",
 };
 
+exports.Message = {
+  messagesCollection: "messages-collection",
+}
+
 exports.Post = {
   postsCollection: "posts-collection",
   postHolderId: "postHolderId",
@@ -36,4 +40,11 @@ exports.AccountThings = {
   feedCollection: "collection",
   notification: "notification",
   notificationList: "notification-list",
+  messaging: "messaging",
+  chatPartnerId: "partnerId",
+};
+
+exports.ChatMsgTypes = {
+  text: "text",
+  image: "image",
 };
