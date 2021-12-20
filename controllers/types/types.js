@@ -4,7 +4,7 @@ exports.User = {
 
 exports.Message = {
   messagesCollection: "messages-collection",
-}
+};
 
 exports.Post = {
   postsCollection: "posts-collection",

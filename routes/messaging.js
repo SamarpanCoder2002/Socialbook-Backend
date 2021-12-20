@@ -7,7 +7,12 @@ const {
 } = require("../controllers/messaging/messaging");
 const router = express.Router();
 
-router.post("/messaging/getChatBoxId", isSignedIn, isAuthenticated, getChatBoxId);
+router.post(
+  "/messaging/getChatBoxId",
+  isSignedIn,
+  isAuthenticated,
+  getChatBoxId
+);
 router.post(
   "/messaging/addChatBoxMessage",
   isSignedIn,
