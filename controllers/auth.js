@@ -34,16 +34,28 @@ exports.signup = (req, res) => {
 
       sendEmailVerification(user).then(() => {
         return res.status(200).json({
+          code: 200,
           message: "Sign up successful",
         });
       });
     })
     .catch((error) => {
+      let errorMsg = error.message;
+
+      if (error.message === "Firebase: Error (auth/email-already-in-use).")
+        errorMsg = "Email already in use";
+      else if (error.message === "Firebase: Error (auth/invalid-email).")
+        errorMsg = "Invalid Email";
+      else if (error.message === "Firebase: Error (auth/weak-password).")
+        errorMsg = "Weak Password";
+      else if (
+        error.message === "Firebase: Error (auth/network-request-failed)."
+      )
+        errorMsg = "Network Error";
+
       return res.status(422).json({
-        error:
-          error.message === "Firebase: Error (auth/email-already-in-use)."
-            ? "Email Already in use"
-            : error.message,
+        code: 422,
+        error: errorMsg,
       });
     });
 };
@@ -63,7 +75,7 @@ exports.signin = (req, res) => {
   setPersistence(auth, browserSessionPersistence).then(() => {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-        console.log(userCredential);
+        
 
         const user = userCredential.user;
         if (user.emailVerified) {
@@ -75,13 +87,15 @@ exports.signin = (req, res) => {
           });
 
           return res.status(200).json({
+            code: 200,
             token,
             message: "Sign in successful",
             user: user.uid,
           });
         } else {
           return res.status(422).json({
-            error: "Email not verified",
+            code: 422,
+            error: "Email not verified. Check your email",
           });
         }
       })
@@ -98,6 +112,7 @@ exports.signin = (req, res) => {
           errorMessage = "Wrong Password";
 
         return res.status(404).json({
+          code: 404,
           error: errorMessage,
         });
       });
