@@ -5,9 +5,18 @@ const {
   setDoc,
   collection,
   getDocs,
+  deleteDoc,
+  where,
+  query,
 } = require("firebase/firestore");
 const { addNotification } = require("./notification");
-const { User, ConnectionType } = require("./types/types");
+const {
+  User,
+  ConnectionType,
+  AccountThings,
+  Post,
+  Message,
+} = require("./types/types");
 
 exports.connectionRequest = async (req, res) => {
   const db = getFirestore();
@@ -200,4 +209,91 @@ exports.getAllAvailableUsers = async (req, res) => {
       message: "Internal Server Error",
     });
   }
+};
+
+exports.removeConnectedUsers = async (req, res) => {
+  try {
+    const { uid, partnerId } = req.body;
+    const db = getFirestore();
+
+    const connectionCurrDoc = await getDoc(
+      doc(
+        db,
+        User.usersCollection,
+        uid,
+        AccountThings.connections,
+        AccountThings.connectionsList
+      )
+    );
+
+    if (connectionCurrDoc.exists()) {
+      await deleteUserData(db, connectionCurrDoc.data(), partnerId, uid);
+      deleteChatBoxData(db, uid, partnerId);
+    }
+
+    const connectionPartnerDoc = await getDoc(
+      doc(
+        db,
+        User.usersCollection,
+        partnerId,
+        AccountThings.connections,
+        AccountThings.connectionsList
+      )
+    );
+
+    if (connectionPartnerDoc.exists())
+      await deleteUserData(db, connectionPartnerDoc.data(), uid, partnerId);
+
+    res.status(200).json({
+      message: "Connection Removed Successfully 😳",
+    });
+  } catch (err) {
+    console.log("error in removeConnectedUsers: ", err);
+
+    res.status(500).json({
+      message: "Internal Server Error 😔",
+    });
+  }
+};
+
+const deleteUserData = async (db, data, targetDelId, accHolderId) => {
+  delete data[targetDelId];
+  await setDoc(
+    doc(
+      db,
+      User.usersCollection,
+      accHolderId,
+      AccountThings.connections,
+      AccountThings.connectionsList
+    ),
+    data
+  );
+};
+
+const deleteChatBoxData = async (db, uid, partnerId) => {
+  const messagingCollection = await getDocs(
+    query(
+      collection(db, User.usersCollection, uid, AccountThings.messaging),
+      where("partnerId", "==", partnerId)
+    )
+  );
+
+  if (messagingCollection.docs.length > 0) {
+    await deleteUserMessageDocData(db, uid, messagingCollection.docs[0].id);
+    await deleteUserMessageDocData(
+      db,
+      partnerId,
+      messagingCollection.docs[0].id
+    );
+
+    await deleteDoc(
+      doc(db, Message.messagesCollection, messagingCollection.docs[0].id)
+    );
+  }
+};
+
+const deleteUserMessageDocData = async (db, targetId, chatBoxId) => {
+  await deleteDoc(
+    doc(db, User.usersCollection, targetId, AccountThings.messaging, chatBoxId)
+  );
 };
