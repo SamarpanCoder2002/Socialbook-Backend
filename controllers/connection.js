@@ -226,7 +226,10 @@ exports.removeConnectedUsers = async (req, res) => {
       )
     );
 
-    if (connectionCurrDoc.exists()) {
+    if (
+      connectionCurrDoc.exists() &&
+      connectionCurrDoc.data()[partnerId] === ConnectionType.connected
+    ) {
       await deleteUserData(db, connectionCurrDoc.data(), partnerId, uid);
       deleteChatBoxData(db, uid, partnerId);
     }
@@ -241,7 +244,10 @@ exports.removeConnectedUsers = async (req, res) => {
       )
     );
 
-    if (connectionPartnerDoc.exists())
+    if (
+      connectionPartnerDoc.exists() &&
+      connectionPartnerDoc.data()[uid] === ConnectionType.connected
+    )
       await deleteUserData(db, connectionPartnerDoc.data(), uid, partnerId);
 
     res.status(200).json({
@@ -249,6 +255,57 @@ exports.removeConnectedUsers = async (req, res) => {
     });
   } catch (err) {
     console.log("error in removeConnectedUsers: ", err);
+
+    res.status(500).json({
+      message: "Internal Server Error 😔",
+    });
+  }
+};
+
+exports.withDrawSentRequest = async (req, res) => {
+  try {
+    const { uid, oppositeId } = req.body;
+    const db = getFirestore();
+
+    const connections = await getDoc(
+      doc(
+        db,
+        User.usersCollection,
+        uid,
+        AccountThings.connections,
+        AccountThings.connectionsList
+      )
+    );
+
+    if (connections.exists()) {
+      const connectionData = connections.data();
+
+      if (connectionData[oppositeId] === ConnectionType.sent)
+        await deleteUserData(db, connectionData, oppositeId, uid);
+    }
+
+    const oppositeConnections = await getDoc(
+      doc(
+        db,
+        User.usersCollection,
+        oppositeId,
+        AccountThings.connections,
+        AccountThings.connectionsList
+      )
+    );
+
+    if (oppositeConnections.exists()) {
+      const oppositeConnectionData = oppositeConnections.data();
+
+      if (oppositeConnectionData[uid] === ConnectionType.received)
+        await deleteUserData(db, oppositeConnectionData, uid, oppositeId);
+    }
+
+    res.status(200).json({
+      message: "Request Withdrawn Successfully 😳",
+    });
+  } catch (err) {
+    console.log("error in withDrawSentRequest: ", err);
 
     res.status(500).json({
       message: "Internal Server Error 😔",
