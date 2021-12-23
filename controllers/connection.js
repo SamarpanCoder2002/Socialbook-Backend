@@ -212,6 +212,33 @@ exports.getAllAvailableUsers = async (req, res) => {
 };
 
 exports.removeConnectedUsers = async (req, res) => {
+  await removeCommonPart(req, res, ConnectionType.connected);
+};
+
+exports.withDrawSentRequest = async (req, res) => {
+  await removeCommonPart(
+    req,
+    res,
+    ConnectionType.sent,
+    ConnectionType.received
+  );
+};
+
+exports.removeIncomingConnectionRequest = async (req, res) => {
+  await removeCommonPart(
+    req,
+    res,
+    ConnectionType.received,
+    ConnectionType.sent
+  );
+};
+
+const removeCommonPart = async (
+  req,
+  res,
+  connectionType,
+  secondaryConnectionType = ConnectionType.connected
+) => {
   try {
     const { uid, partnerId } = req.body;
     const db = getFirestore();
@@ -228,10 +255,12 @@ exports.removeConnectedUsers = async (req, res) => {
 
     if (
       connectionCurrDoc.exists() &&
-      connectionCurrDoc.data()[partnerId] === ConnectionType.connected
+      connectionCurrDoc.data()[partnerId] === connectionType
     ) {
       await deleteUserData(db, connectionCurrDoc.data(), partnerId, uid);
-      deleteChatBoxData(db, uid, partnerId);
+
+      if (connectionType === ConnectionType.connected)
+        deleteChatBoxData(db, uid, partnerId);
     }
 
     const connectionPartnerDoc = await getDoc(
@@ -246,68 +275,19 @@ exports.removeConnectedUsers = async (req, res) => {
 
     if (
       connectionPartnerDoc.exists() &&
-      connectionPartnerDoc.data()[uid] === ConnectionType.connected
+      connectionPartnerDoc.data()[uid] === secondaryConnectionType
     )
       await deleteUserData(db, connectionPartnerDoc.data(), uid, partnerId);
 
-    res.status(200).json({
-      message: "Connection Removed Successfully 😳",
+    return res.status(200).json({
+      code: 200,
+      message: "Operation Done Successfully 😳",
     });
   } catch (err) {
-    console.log("error in removeConnectedUsers: ", err);
+    console.log("error in removeCommonPart: ", err);
 
-    res.status(500).json({
-      message: "Internal Server Error 😔",
-    });
-  }
-};
-
-exports.withDrawSentRequest = async (req, res) => {
-  try {
-    const { uid, oppositeId } = req.body;
-    const db = getFirestore();
-
-    const connections = await getDoc(
-      doc(
-        db,
-        User.usersCollection,
-        uid,
-        AccountThings.connections,
-        AccountThings.connectionsList
-      )
-    );
-
-    if (connections.exists()) {
-      const connectionData = connections.data();
-
-      if (connectionData[oppositeId] === ConnectionType.sent)
-        await deleteUserData(db, connectionData, oppositeId, uid);
-    }
-
-    const oppositeConnections = await getDoc(
-      doc(
-        db,
-        User.usersCollection,
-        oppositeId,
-        AccountThings.connections,
-        AccountThings.connectionsList
-      )
-    );
-
-    if (oppositeConnections.exists()) {
-      const oppositeConnectionData = oppositeConnections.data();
-
-      if (oppositeConnectionData[uid] === ConnectionType.received)
-        await deleteUserData(db, oppositeConnectionData, uid, oppositeId);
-    }
-
-    res.status(200).json({
-      message: "Request Withdrawn Successfully 😳",
-    });
-  } catch (err) {
-    console.log("error in withDrawSentRequest: ", err);
-
-    res.status(500).json({
+    return res.status(500).json({
+      code: 500,
       message: "Internal Server Error 😔",
     });
   }
