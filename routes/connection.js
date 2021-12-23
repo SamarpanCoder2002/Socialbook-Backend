@@ -13,30 +13,35 @@ const {
 
 router.post("/connect-request", isSignedIn, isAuthenticated, connectionRequest);
 router.post("/accept-request", isSignedIn, isAuthenticated, acceptRequest);
+
 router.get(
   "/getConnections/:requiredConnectionType",
   isSignedIn,
   isAuthenticated,
   getSpecificConnections
 );
+
 router.get(
   "/getAllAvailableUsers",
   isSignedIn,
   isAuthenticated,
   getAllAvailableUsers
 );
+
 router.post(
   "/removeConnections",
   isSignedIn,
   isAuthenticated,
   removeConnectedUsers
 );
+
 router.post(
   "/withDrawSentRequest",
   isSignedIn,
   isAuthenticated,
   withDrawSentRequest
 );
+
 router.post(
   "/removeIncomingConnectionRequest",
   isSignedIn,
