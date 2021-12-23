@@ -163,11 +163,13 @@ exports.signout = (req, res) => {
     .signOut()
     .then(() => {
       return res.status(200).json({
+        code: 200,
         message: "Signout successful",
       });
     })
     .catch((error) => {
       return res.status(422).json({
+        code: 422,
         error: error.message,
       });
     });

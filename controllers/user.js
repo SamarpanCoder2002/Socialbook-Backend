@@ -4,7 +4,6 @@ const {
   getFirestore,
   collection,
   getDocs,
-  getDoc,
   doc,
   setDoc,
   where,
@@ -34,78 +33,11 @@ exports.createUserAccount = async (req, res) => {
     interests: req.body.interests,
   });
 
-  addNotification(
-    "😍 Your Account Created Successfully",
-    `/feed`,
-    userRealId
-  );
+  addNotification("😍 Your Account Created Successfully", `/feed`, userRealId);
 
   return res.status(200).json({
     message: "User Account Created Successfully",
   });
-
-  /// TODO: Will Create Automatically at connected place
-  // await setDoc(
-  //   doc(db, User.usersCollection, userRealId, "connections", "connected"),
-  //   {}
-  // );
-
-  /// TODO: Will Create Automatically at invitation Received place
-  // await setDoc(
-  //   doc(
-  //     db,
-  //     User.usersCollection,
-  //     userRealId,
-  //     "connections",
-  //     "invitation",
-  //     "received",
-  //     "empty"
-  //   ),
-  //   {}
-  // );
-
-  /// TODO: Will Create Automatically at Connection Request place
-  // await setDoc(
-  //   doc(
-  //     db,
-  //     User.usersCollection,
-  //     userRealId,
-  //     "connections",
-  //     "invitation",
-  //     "sent",
-  //     "empty"
-  //   ),
-  //   {}
-  // );
-
-  /// TODO: Below things will create at correct place respectively
-  // await setDoc(
-  //   doc(db, User.usersCollection, userRealId, "profile", "ownPost"),
-  //   {}
-  // );
-  // await setDoc(
-  //   doc(db, User.usersCollection, userRealId, "profile", "activity"),
-  //   {}
-  // );
-
-  // await setDoc(
-  //   doc(db, User.usersCollection, userRealId, "post-feed", "welcome"),
-  //   {}
-  // );
-  // await setDoc(
-  //   doc(
-  //     db,
-  //     User.usersCollection,
-  //     userRealId,
-  //     "notification",
-  //     "your-account-created"
-  //   ),
-  //   {}
-  // );
-  // await setDoc(
-  //   doc(db, User.usersCollection, userRealId, "chat-collection", "self-chat"),
-  //   {}
-  // );
 };
 
 /// Middleware

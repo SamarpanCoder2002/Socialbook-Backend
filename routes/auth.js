@@ -27,12 +27,6 @@ router.post(
 
 router.post("/googleSignIn", googleSignInWithProvider);
 
-router.post("/testing", isSignedIn, isAuthenticated, (req, res) => {
-  return res.json({
-    message: "Operation Done Successfully",
-  })
-})
-
 router.get("/signout", signout);
 
 module.exports = router;
