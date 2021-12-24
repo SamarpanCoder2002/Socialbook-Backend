@@ -7,8 +7,6 @@ const {
   userNotPresent,
 } = require("../controllers/user");
 
-
-
 router.post(
   "/isUserPresent",
   isSignedIn,
@@ -16,6 +14,7 @@ router.post(
   isUserPresent,
   userNotPresent
 );
+
 router.post(
   "/createUserAccount/:userId",
   isSignedIn,

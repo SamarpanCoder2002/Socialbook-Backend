@@ -95,7 +95,8 @@ exports.createUserAccount = async (req, res) => {
         if (picFile.size > 3000000) {
           return res.status(400).json({
             code: 400,
-            message: "File size too large",
+            message:
+              "Profile Picture size too large... Please upload a Picture Within 3MB",
           });
         }
 
