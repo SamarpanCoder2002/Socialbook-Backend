@@ -30,6 +30,7 @@ exports.PostTypes = {
 };
 
 exports.AccountThings = {
+  profileImgStorageContainer: "user-profile-img-container",
   connections: "connections",
   posts: "my-posts",
   shares: "shares",

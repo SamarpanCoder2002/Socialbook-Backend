@@ -182,7 +182,9 @@ exports.isSignedIn = expressJwt({
 });
 
 exports.isAuthenticated = (req, res, next) => {
-  if (req.body && req.auth && req.body.uid === req.auth.id) {
+  const incomingUserId = req.headers['content-type'].includes('multipart/form-data')? req.params.userId:req.body.uid;
+
+  if (req.body && req.auth && incomingUserId === req.auth.id) {
     next();
   } else {
     return res.status(401).json({

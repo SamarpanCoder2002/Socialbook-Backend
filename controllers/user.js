@@ -1,5 +1,5 @@
 const { getAuth } = require("firebase/auth");
-const { User } = require("./types/types");
+const { User, AccountThings } = require("./types/types");
 const {
   getFirestore,
   collection,
@@ -10,33 +10,13 @@ const {
   query,
 } = require("firebase/firestore");
 const { addNotification } = require("./notification");
+const { uploadFileInStorage } = require("./post-collection/upload-in-storage");
+const formidable = require("formidable");
+const fs = require("fs");
 
 exports.userNotPresent = (req, res) => {
   return res.status(404).json({
     message: "User Not Present",
-  });
-};
-
-/// Create User Account
-exports.createUserAccount = async (req, res) => {
-  const auth = getAuth();
-  const userRealId = auth.currentUser.uid;
-
-  const db = getFirestore();
-
-  /// NOTE: User Account Created Successfully
-  await setDoc(doc(db, User.usersCollection, userRealId), {
-    email: `${auth.currentUser.email}`,
-    name: req.body.name,
-    profilePic: req.body.profilePic,
-    description: req.body.description,
-    interests: req.body.interests,
-  });
-
-  addNotification("😍 Your Account Created Successfully", `/feed`, userRealId);
-
-  return res.status(200).json({
-    message: "User Account Created Successfully",
   });
 };
 
@@ -60,7 +40,9 @@ exports.isUserPresent = (req, res, next) => {
           querySnapShot.docs.forEach((doc) => {
             if (doc.exists) {
               res.status(200).json({
+                code: 200,
                 message: "User already present",
+                isUserPresent: true,
               });
             } else {
               next();
@@ -74,14 +56,80 @@ exports.isUserPresent = (req, res, next) => {
           err
         );
         res.status(500).json({
-          message: err.message,
+          code: 500,
+          message: "Internal Server Error",
         });
       });
   } catch (err) {
     res.clearCookie(process.env.AUTH_TOKEN);
 
-    return res.status(200).json({
+    return res.status(403).json({
+      code: 403,
       message: "Session Expired. Please Sign In Again",
     });
   }
+};
+
+exports.createUserAccount = async (req, res) => {
+  try {
+    let form = new formidable.IncomingForm();
+    form.keepExtensions = true;
+
+    form.parse(req, async (err, fields, file) => {
+      if (err) {
+        return res.status(400).json({
+          error: "Problem with Image",
+        });
+      }
+
+      const picFile = file.file;
+
+      if (!picFile) {
+        const profilePicLink = process.env.NO_PROFILE_IMG;
+        return formDataExtract(req, res, { ...fields, profilePicLink });
+      } else {
+        if (picFile.size > 3000000) {
+          return res.status(400).json({
+            code: 400,
+            message: "File size too large",
+          });
+        }
+
+        const profilePicLink = await uploadFileInStorage(
+          fs.readFileSync(picFile.filepath),
+          `${req.auth.id}-profile-pic.jpg`,
+          AccountThings.profileImgStorageContainer,
+          picFile.mimetype
+        );
+
+        return formDataExtract(req, res, { ...fields, profilePicLink });
+      }
+    });
+  } catch (err) {
+    console.log("Error in Create User profile: ", err);
+    return res.status(500).json({
+      code: 500,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+const formDataExtract = async (req, res, formExtractedData) => {
+  const { user, description, profilePicLink, interests } = formExtractedData;
+  const auth = getAuth();
+  const db = getFirestore();
+  await setDoc(doc(db, User.usersCollection, req.auth.id), {
+    email: auth.currentUser.email.toString(),
+    name: user,
+    profilePic: profilePicLink,
+    description: description,
+    interests: JSON.parse(interests),
+  });
+
+  addNotification("😍 Your Account Created Successfully", `/feed`, req.auth.id);
+
+  return res.status(200).json({
+    code: 200,
+    message: "User Account Created Successfully",
+  });
 };

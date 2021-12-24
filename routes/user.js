@@ -1,13 +1,27 @@
 const express = require("express");
 const router = express.Router();
-const { isSignedIn } = require("../controllers/auth");
+const { isSignedIn, isAuthenticated } = require("../controllers/auth");
 const {
   isUserPresent,
   createUserAccount,
   userNotPresent,
 } = require("../controllers/user");
 
-router.get("/isUserPresent", isSignedIn, isUserPresent, userNotPresent);
-router.post("/createUserAccount", isSignedIn, isUserPresent, createUserAccount);
+
+
+router.post(
+  "/isUserPresent",
+  isSignedIn,
+  isAuthenticated,
+  isUserPresent,
+  userNotPresent
+);
+router.post(
+  "/createUserAccount/:userId",
+  isSignedIn,
+  isAuthenticated,
+  isUserPresent,
+  createUserAccount
+);
 
 module.exports = router;
