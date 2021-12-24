@@ -86,7 +86,11 @@ exports.createUserAccount = async (req, res) => {
 
       if (!picFile) {
         const profilePicLink = process.env.NO_PROFILE_IMG;
-        return formDataExtract(req, res, { ...fields, profilePicLink });
+
+        return setProfileDataInDatabase(req, res, {
+          ...fields,
+          profilePicLink,
+        });
       } else {
         if (picFile.size > 3000000) {
           return res.status(400).json({
@@ -102,7 +106,10 @@ exports.createUserAccount = async (req, res) => {
           picFile.mimetype
         );
 
-        return formDataExtract(req, res, { ...fields, profilePicLink });
+        return setProfileDataInDatabase(req, res, {
+          ...fields,
+          profilePicLink,
+        });
       }
     });
   } catch (err) {
@@ -114,10 +121,12 @@ exports.createUserAccount = async (req, res) => {
   }
 };
 
-const formDataExtract = async (req, res, formExtractedData) => {
+const setProfileDataInDatabase = async (req, res, formExtractedData) => {
   const { user, description, profilePicLink, interests } = formExtractedData;
+
   const auth = getAuth();
   const db = getFirestore();
+
   await setDoc(doc(db, User.usersCollection, req.auth.id), {
     email: auth.currentUser.email.toString(),
     name: user,
