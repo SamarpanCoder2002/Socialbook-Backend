@@ -8,6 +8,7 @@ const {
   setDoc,
   where,
   query,
+  getDoc,
 } = require("firebase/firestore");
 const { addNotification } = require("./notification");
 const { uploadFileInStorage } = require("./post-collection/upload-in-storage");
@@ -25,28 +26,15 @@ exports.isUserPresent = (req, res, next) => {
   try {
     const db = getFirestore();
 
-    const auth = getAuth();
-
-    const emailSearchQuery = query(
-      collection(db, `${User.usersCollection}`),
-      where("email", "==", `${auth.currentUser.email}`)
-    );
-
-    getDocs(emailSearchQuery)
-      .then((querySnapShot) => {
-        if (querySnapShot.docs.length === 0) {
+    getDoc(doc(db, User.usersCollection, req.auth.id))
+      .then((snapShot) => {
+        if (!snapShot.data()) {
           next();
         } else {
-          querySnapShot.docs.forEach((doc) => {
-            if (doc.exists) {
-              res.status(200).json({
-                code: 200,
-                message: "User already present",
-                isUserPresent: true,
-              });
-            } else {
-              next();
-            }
+          res.status(200).json({
+            code: 200,
+            message: "User already present",
+            isUserPresent: true,
           });
         }
       })
@@ -72,6 +60,22 @@ exports.isUserPresent = (req, res, next) => {
 
 exports.createUserAccount = async (req, res) => {
   try {
+    const auth = getAuth();
+
+    if (!auth.currentUser) {
+      return res.status(403).json({
+        code: 403,
+        message: "Session Expired. Please Sign In Again",
+      });
+    }
+    
+    if(!getAuth()){
+      return res.status(403).json({
+        code: 403,
+        message: "Session Expired. Please Sign In Again",
+      });
+    }
+
     let form = new formidable.IncomingForm();
     form.keepExtensions = true;
 
@@ -85,11 +89,8 @@ exports.createUserAccount = async (req, res) => {
       const picFile = file.file;
 
       if (!picFile) {
-        const profilePicLink = process.env.NO_PROFILE_IMG;
-
         return setProfileDataInDatabase(req, res, {
           ...fields,
-          profilePicLink,
         });
       } else {
         if (picFile.size > 3000000) {
@@ -131,7 +132,7 @@ const setProfileDataInDatabase = async (req, res, formExtractedData) => {
   await setDoc(doc(db, User.usersCollection, req.auth.id), {
     email: auth.currentUser.email.toString(),
     name: user,
-    profilePic: profilePicLink,
+    profilePic: profilePicLink || "",
     description: description,
     interests: JSON.parse(interests),
   });

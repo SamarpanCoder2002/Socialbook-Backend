@@ -113,6 +113,8 @@ exports.acceptRequest = async (req, res) => {
 
 exports.getSpecificConnections = async (req, res) => {
   const incomingRequestData = [];
+  let page = req.query?.page || 1;
+  if (page < 1) page = 1;
 
   let connectionType = ConnectionType.connected;
 
@@ -138,14 +140,23 @@ exports.getSpecificConnections = async (req, res) => {
     ([, tempConnectionType]) => tempConnectionType === connectionType
   );
 
-  for (let i = 0; i < filteredData.length; i++) {
+  const requiredData = filteredData.slice((page - 1) * 10, page * 10);
+
+  if(!requiredData.length) {
+    return res.status(404).json({
+      message: "No Result Found",
+      data: [],
+    });
+  }
+
+  for (let i = 0; i < requiredData.length; i++) {
     const userRef = await getDoc(
-      doc(db, User.usersCollection, filteredData[i][0])
+      doc(db, User.usersCollection, requiredData[i][0])
     );
 
     if (userRef.exists()) {
       incomingRequestData.push({
-        id: filteredData[i][0],
+        id: requiredData[i][0],
         name: userRef.data().name,
         profilePic: userRef.data().profilePic,
         description: userRef.data().description,
@@ -161,6 +172,8 @@ exports.getSpecificConnections = async (req, res) => {
 exports.getAllAvailableUsers = async (req, res) => {
   try {
     const db = getFirestore();
+    let page = req.query?.page || 1;
+    if (page < 1) page = 1;
 
     const allUsersCollection = await getDocs(
       collection(db, User.usersCollection)
@@ -173,6 +186,16 @@ exports.getAllAvailableUsers = async (req, res) => {
         allDocId.push(allUsersCollection.docs[i].id);
     }
 
+    const requiredIds = allDocId.slice((page - 1) * 12, page * 12);
+
+    if (!requiredIds.length) {
+      return res.status(404).json({
+        code: 404,
+        message: "No Result Found",
+        data: [],
+      });
+    }
+
     const allRelatedDocCollection = await getDoc(
       doc(db, User.usersCollection, req.auth.id, "connections", "list")
     );
@@ -180,13 +203,13 @@ exports.getAllAvailableUsers = async (req, res) => {
     if (allRelatedDocCollection.exists()) {
       const data = Object.entries(allRelatedDocCollection.data());
       data.forEach(([docId, _]) => {
-        allDocId.splice(allDocId.indexOf(docId), 1);
+        requiredIds.splice(requiredIds.indexOf(docId), 1);
       });
     }
 
     const allAvailableUsersData = [];
 
-    for (let i = 0; i < allDocId.length; i++) {
+    for (let i = 0; i < requiredIds.length; i++) {
       const userRef = await getDoc(doc(db, User.usersCollection, allDocId[i]));
 
       if (userRef.exists()) {
@@ -200,12 +223,14 @@ exports.getAllAvailableUsers = async (req, res) => {
     }
 
     return res.status(200).json({
+      code: 200,
       message: "All Available Users",
       data: allAvailableUsersData,
     });
   } catch (err) {
     console.log("Error in getAllAvailableUsers", err);
     return res.status(500).json({
+      code: 500,
       message: "Internal Server Error",
     });
   }
@@ -257,7 +282,12 @@ const removeCommonPart = async (
       connectionCurrDoc.exists() &&
       connectionCurrDoc.data()[partnerId] === connectionType
     ) {
-      await deleteUserData(db, connectionCurrDoc.data(), partnerId, req.auth.id);
+      await deleteUserData(
+        db,
+        connectionCurrDoc.data(),
+        partnerId,
+        req.auth.id
+      );
 
       if (connectionType === ConnectionType.connected)
         deleteChatBoxData(db, req.auth.id, partnerId);
@@ -277,7 +307,12 @@ const removeCommonPart = async (
       connectionPartnerDoc.exists() &&
       connectionPartnerDoc.data()[req.auth.id] === secondaryConnectionType
     )
-      await deleteUserData(db, connectionPartnerDoc.data(), req.auth.id, partnerId);
+      await deleteUserData(
+        db,
+        connectionPartnerDoc.data(),
+        req.auth.id,
+        partnerId
+      );
 
     return res.status(200).json({
       code: 200,

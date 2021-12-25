@@ -7,7 +7,7 @@ const {
   userNotPresent,
 } = require("../controllers/user");
 
-router.post(
+router.get(
   "/isUserPresent/:userId",
   isSignedIn,
   isAuthenticated,
