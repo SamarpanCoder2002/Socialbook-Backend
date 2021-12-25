@@ -27,6 +27,6 @@ router.post(
 
 router.post("/googleSignIn", googleSignInWithProvider);
 
-router.post("/signout", isSignedIn, isAuthenticated, signout);
+router.post("/signout/:userId", isSignedIn, isAuthenticated, signout);
 
 module.exports = router;

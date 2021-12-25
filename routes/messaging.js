@@ -8,19 +8,19 @@ const {
 const router = express.Router();
 
 router.post(
-  "/messaging/getChatBoxId",
+  "/messaging/getChatBoxId/:userId",
   isSignedIn,
   isAuthenticated,
   getChatBoxId
 );
 router.post(
-  "/messaging/addChatBoxMessage",
+  "/messaging/addChatBoxMessage/:userId",
   isSignedIn,
   isAuthenticated,
   addMessageToChatBox
 );
 router.get(
-  "/messaging/getAllChatMessages",
+  "/messaging/getAllChatMessages/:userId",
   isSignedIn,
   isAuthenticated,
   getAllChatMessages

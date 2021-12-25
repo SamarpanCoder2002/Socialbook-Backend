@@ -11,39 +11,39 @@ const {
   removeIncomingConnectionRequest,
 } = require("../controllers/connection");
 
-router.post("/connect-request", isSignedIn, isAuthenticated, connectionRequest);
-router.post("/accept-request", isSignedIn, isAuthenticated, acceptRequest);
+router.post("/connect-request/:userId", isSignedIn, isAuthenticated, connectionRequest);
+router.post("/accept-request/:userId", isSignedIn, isAuthenticated, acceptRequest);
 
 router.get(
-  "/getConnections/:requiredConnectionType",
+  "/getConnections/:requiredConnectionType/:userId",
   isSignedIn,
   isAuthenticated,
   getSpecificConnections
 );
 
 router.get(
-  "/getAllAvailableUsers",
+  "/getAllAvailableUsers/:userId",
   isSignedIn,
   isAuthenticated,
   getAllAvailableUsers
 );
 
 router.post(
-  "/removeConnections",
+  "/removeConnections/:userId",
   isSignedIn,
   isAuthenticated,
   removeConnectedUsers
 );
 
 router.post(
-  "/withDrawSentRequest",
+  "/withDrawSentRequest/:userId",
   isSignedIn,
   isAuthenticated,
   withDrawSentRequest
 );
 
 router.post(
-  "/removeIncomingConnectionRequest",
+  "/removeIncomingConnectionRequest/:userId",
   isSignedIn,
   isAuthenticated,
   removeIncomingConnectionRequest

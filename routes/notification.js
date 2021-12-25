@@ -1,8 +1,9 @@
 const express = require("express");
 const { isSignedIn, isAuthenticated } = require("../controllers/auth");
-const { getAllNotifications } = require("../controllers/notification");
+const { getAllNotifications, deleteParticularNotification } = require("../controllers/notification");
 const router = express.Router();
 
-router.get("/getAllNotifications", isSignedIn, isAuthenticated, getAllNotifications);
+router.get("/getAllNotifications/:userId", isSignedIn, isAuthenticated, getAllNotifications);
+router.delete("/deleteNotification/:userId/:notificationId", isSignedIn, isAuthenticated, deleteParticularNotification);
 
 module.exports = router;

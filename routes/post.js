@@ -18,28 +18,28 @@ const {
   getCurrentAccountPosts,
 } = require("../controllers/post-collection/get-posts");
 
-router.post("/createTextPost", isSignedIn, isAuthenticated, createTextPost);
-router.post("/createVideoPost", isSignedIn, isAuthenticated, createVideoPost);
+router.post("/createTextPost/:userId", isSignedIn, isAuthenticated, createTextPost);
+router.post("/createVideoPost/:userId", isSignedIn, isAuthenticated, createVideoPost);
 router.post(
-  "/createDocumentPost",
+  "/createDocumentPost/:userId",
   isSignedIn,
   isAuthenticated,
   createDocumentPost
 );
-router.post("/createPollPost", isSignedIn, isAuthenticated, createPollPost);
+router.post("/createPollPost/:userId", isSignedIn, isAuthenticated, createPollPost);
 
 // TODO: Come back here... not completed.. Do it when connect to frontend
-router.post("/createImagePost", createImagePost);
-router.post("/createSlidePost", createSlidePost);
+router.post("/createImagePost/:userId", createImagePost);
+router.post("/createSlidePost/:userId", createSlidePost);
 
 // ** For Get Feed and Own Posts **
-router.get("/getFeedPosts", isSignedIn, isAuthenticated, getFeedPosts);
-router.get("/getMyPosts", isSignedIn, isAuthenticated, getCurrentAccountPosts);
+router.get("/getFeedPosts/:userId", isSignedIn, isAuthenticated, getFeedPosts);
+router.get("/getMyPosts/:userId", isSignedIn, isAuthenticated, getCurrentAccountPosts);
 
 // ** For Engagement Inclusion **
-router.post("/postInsertLove/:postId", isSignedIn, isAuthenticated, insertLove);
+router.post("/postInsertLove/:postId/:userId", isSignedIn, isAuthenticated, insertLove);
 router.post(
-  "/postInsertComment/:postId",
+  "/postInsertComment/:postId/:userId",
   isSignedIn,
   isAuthenticated,
   insertComment

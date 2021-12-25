@@ -8,7 +8,7 @@ const {
 } = require("../controllers/user");
 
 router.post(
-  "/isUserPresent",
+  "/isUserPresent/:userId",
   isSignedIn,
   isAuthenticated,
   isUserPresent,
