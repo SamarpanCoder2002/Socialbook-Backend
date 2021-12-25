@@ -3,15 +3,15 @@ const { addNotification } = require("./notification");
 const { User } = require("./types/types");
 
 exports.updateProfileData = (req, res) => {
-  const { name, description, profilePic, interests, uid } = req.body;
+  const { name, description, profilePic, interests } = req.body;
 
   const db = getFirestore();
 
-  getDoc(doc(db, User.usersCollection, uid))
+  getDoc(doc(db, User.usersCollection, req.auth.id))
     .then(async (docRef) => {
       if (docRef.data()) {
         await setDoc(
-          doc(db, User.usersCollection, uid),
+          doc(db, User.usersCollection, req.auth.id),
           {
             name,
             description,
@@ -23,8 +23,8 @@ exports.updateProfileData = (req, res) => {
 
         addNotification(
           "Your Profile Updated Successfully 🎉",
-          `/${uid}/profile`,
-          uid
+          `/${req.auth.id}/profile`,
+          req.auth.id
         );
 
         return res.status(200).json({

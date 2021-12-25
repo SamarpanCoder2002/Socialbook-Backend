@@ -240,14 +240,14 @@ const removeCommonPart = async (
   secondaryConnectionType = ConnectionType.connected
 ) => {
   try {
-    const { uid, partnerId } = req.body;
+    const { partnerId } = req.body;
     const db = getFirestore();
 
     const connectionCurrDoc = await getDoc(
       doc(
         db,
         User.usersCollection,
-        uid,
+        req.auth.id,
         AccountThings.connections,
         AccountThings.connectionsList
       )
@@ -257,10 +257,10 @@ const removeCommonPart = async (
       connectionCurrDoc.exists() &&
       connectionCurrDoc.data()[partnerId] === connectionType
     ) {
-      await deleteUserData(db, connectionCurrDoc.data(), partnerId, uid);
+      await deleteUserData(db, connectionCurrDoc.data(), partnerId, req.auth.id);
 
       if (connectionType === ConnectionType.connected)
-        deleteChatBoxData(db, uid, partnerId);
+        deleteChatBoxData(db, req.auth.id, partnerId);
     }
 
     const connectionPartnerDoc = await getDoc(
@@ -275,9 +275,9 @@ const removeCommonPart = async (
 
     if (
       connectionPartnerDoc.exists() &&
-      connectionPartnerDoc.data()[uid] === secondaryConnectionType
+      connectionPartnerDoc.data()[req.auth.id] === secondaryConnectionType
     )
-      await deleteUserData(db, connectionPartnerDoc.data(), uid, partnerId);
+      await deleteUserData(db, connectionPartnerDoc.data(), req.auth.id, partnerId);
 
     return res.status(200).json({
       code: 200,
