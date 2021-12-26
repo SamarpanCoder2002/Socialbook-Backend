@@ -70,7 +70,7 @@ exports.acceptRequest = async (req, res) => {
   await setDoc(
     doc(db, User.usersCollection, req.auth.id, "connections", "list"),
     {
-      [req.body.requestHolder.id]: ConnectionType.connected,
+      [req.body.oppositeUserId]: ConnectionType.connected,
     },
     { merge: true }
   );
@@ -79,7 +79,7 @@ exports.acceptRequest = async (req, res) => {
     doc(
       db,
       User.usersCollection,
-      req.body.requestHolder.id,
+      req.body.oppositeUserId,
       "connections",
       "list"
     ),
@@ -101,7 +101,7 @@ exports.acceptRequest = async (req, res) => {
   addNotification(
     "😇 Congrats! You have now new connection",
     `/connection`,
-    req.body.requestHolder.id,
+    req.body.oppositeUserId,
     {
       prevDesignSet: { prevIndex: 1 },
     }
@@ -271,7 +271,7 @@ const removeCommonPart = async (
   secondaryConnectionType = ConnectionType.connected
 ) => {
   try {
-    const { partnerId } = req.body;
+    const { oppositeUserId } = req.body;
     const db = getFirestore();
 
     const connectionCurrDoc = await getDoc(
@@ -286,24 +286,24 @@ const removeCommonPart = async (
 
     if (
       connectionCurrDoc.exists() &&
-      connectionCurrDoc.data()[partnerId] === connectionType
+      connectionCurrDoc.data()[oppositeUserId] === connectionType
     ) {
       await deleteUserData(
         db,
         connectionCurrDoc.data(),
-        partnerId,
+        oppositeUserId,
         req.auth.id
       );
 
       if (connectionType === ConnectionType.connected)
-        deleteChatBoxData(db, req.auth.id, partnerId);
+        deleteChatBoxData(db, req.auth.id, oppositeUserId);
     }
 
     const connectionPartnerDoc = await getDoc(
       doc(
         db,
         User.usersCollection,
-        partnerId,
+        oppositeUserId,
         AccountThings.connections,
         AccountThings.connectionsList
       )
@@ -317,7 +317,7 @@ const removeCommonPart = async (
         db,
         connectionPartnerDoc.data(),
         req.auth.id,
-        partnerId
+        oppositeUserId
       );
 
     return res.status(200).json({
@@ -348,11 +348,11 @@ const deleteUserData = async (db, data, targetDelId, accHolderId) => {
   );
 };
 
-const deleteChatBoxData = async (db, uid, partnerId) => {
+const deleteChatBoxData = async (db, uid, oppositeUserId) => {
   const messagingCollection = await getDocs(
     query(
       collection(db, User.usersCollection, uid, AccountThings.messaging),
-      where("partnerId", "==", partnerId)
+      where("oppositeUserId", "==", oppositeUserId)
     )
   );
 
@@ -360,7 +360,7 @@ const deleteChatBoxData = async (db, uid, partnerId) => {
     await deleteUserMessageDocData(db, uid, messagingCollection.docs[0].id);
     await deleteUserMessageDocData(
       db,
-      partnerId,
+      oppositeUserId,
       messagingCollection.docs[0].id
     );
 

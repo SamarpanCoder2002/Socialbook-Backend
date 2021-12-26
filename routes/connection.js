@@ -12,7 +12,7 @@ const {
 } = require("../controllers/connection");
 
 router.post("/sendConnectionRequest/:userId", isSignedIn, isAuthenticated, connectionRequest);
-router.post("/accept-request/:userId", isSignedIn, isAuthenticated, acceptRequest);
+router.post("/acceptConnectionRequest/:userId", isSignedIn, isAuthenticated, acceptRequest);
 
 router.get(
   "/getConnections/:requiredConnectionType/:userId",
