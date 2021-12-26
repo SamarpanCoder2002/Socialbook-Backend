@@ -25,7 +25,7 @@ exports.connectionRequest = async (req, res) => {
   await setDoc(
     doc(db, User.usersCollection, req.auth.id, "connections", "list"),
     {
-      [req.body.oppositeUser.id]: ConnectionType.sent,
+      [req.body.oppositeUserId]: ConnectionType.sent,
     },
     { merge: true }
   );
@@ -35,7 +35,7 @@ exports.connectionRequest = async (req, res) => {
     doc(
       db,
       User.usersCollection,
-      req.body.oppositeUser.id,
+      req.body.oppositeUserId,
       "connections",
       "list"
     ),
@@ -52,13 +52,14 @@ exports.connectionRequest = async (req, res) => {
   await addNotification(
     "Someone Sent you a Connection Request",
     `/connection`,
-    req.body.oppositeUser.id,
+    req.body.oppositeUserId,
     {
       prevDesignSet: { prevIndex: 2, invitationSetInitialIndex: 0 },
     }
   );
 
   return res.status(200).json({
+    code: 200,
     message: "Connection Request Sent",
   });
 };
@@ -130,7 +131,8 @@ exports.getSpecificConnections = async (req, res) => {
   );
 
   if (!docRef.exists()) {
-    return res.status(200).json({
+    return res.status(404).json({
+      code: 404,
       message: "No Result Found",
       data: [],
     });
@@ -142,8 +144,9 @@ exports.getSpecificConnections = async (req, res) => {
 
   const requiredData = filteredData.slice((page - 1) * 10, page * 10);
 
-  if(!requiredData.length) {
+  if (!requiredData.length) {
     return res.status(404).json({
+      code: 404,
       message: "No Result Found",
       data: [],
     });
@@ -165,6 +168,7 @@ exports.getSpecificConnections = async (req, res) => {
   }
 
   return res.status(200).json({
+    code: 200,
     data: incomingRequestData,
   });
 };
@@ -179,16 +183,14 @@ exports.getAllAvailableUsers = async (req, res) => {
       collection(db, User.usersCollection)
     );
 
-    const allDocId = [];
+    let allDocId = [];
 
     for (let i = 0; i < allUsersCollection.docs.length; i++) {
       if (allUsersCollection.docs[i].id !== req.auth.id)
         allDocId.push(allUsersCollection.docs[i].id);
     }
 
-    const requiredIds = allDocId.slice((page - 1) * 12, page * 12);
-
-    if (!requiredIds.length) {
+    if (!allDocId.length) {
       return res.status(404).json({
         code: 404,
         message: "No Result Found",
@@ -201,20 +203,24 @@ exports.getAllAvailableUsers = async (req, res) => {
     );
 
     if (allRelatedDocCollection.exists()) {
-      const data = Object.entries(allRelatedDocCollection.data());
-      data.forEach(([docId, _]) => {
-        requiredIds.splice(requiredIds.indexOf(docId), 1);
-      });
+      let data = Object.entries(allRelatedDocCollection.data());
+      data = data.map(([id]) => id);
+
+      allDocId = allDocId.filter((id) => !data.includes(id));
     }
+
+    const requiredIds = allDocId.slice((page - 1) * 12, page * 12);
 
     const allAvailableUsersData = [];
 
     for (let i = 0; i < requiredIds.length; i++) {
-      const userRef = await getDoc(doc(db, User.usersCollection, allDocId[i]));
+      const userRef = await getDoc(
+        doc(db, User.usersCollection, requiredIds[i])
+      );
 
       if (userRef.exists()) {
         allAvailableUsersData.push({
-          id: allDocId[i],
+          id: requiredIds[i],
           name: userRef.data().name,
           profilePic: userRef.data().profilePic,
           description: userRef.data().description,

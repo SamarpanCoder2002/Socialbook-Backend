@@ -11,7 +11,7 @@ const {
   removeIncomingConnectionRequest,
 } = require("../controllers/connection");
 
-router.post("/connect-request/:userId", isSignedIn, isAuthenticated, connectionRequest);
+router.post("/sendConnectionRequest/:userId", isSignedIn, isAuthenticated, connectionRequest);
 router.post("/accept-request/:userId", isSignedIn, isAuthenticated, acceptRequest);
 
 router.get(
