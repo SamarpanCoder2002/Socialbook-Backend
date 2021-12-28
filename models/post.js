@@ -56,21 +56,26 @@ class PollPost {
   constructor(text, question, options) {
     this.text = text;
     this.question = question;
-    this.options = this.makeInitialResults(options);
-  }
-
-  makeInitialResults = (options) => {
-    const resultsInitial = [];
-
-    options.forEach((option) => {
-      resultsInitial.push({
+    this.options = options.map((option) => {
+      return {
         text: option,
         votes: 0,
-      });
+      };
     });
+  }
 
-    return resultsInitial;
-  };
+  // makeInitialResults = (options) => {
+  //   const resultsInitial = [];
+
+  //   options.forEach((option) => {
+  //     resultsInitial.push({
+  //       text: option,
+  //       votes: 0,
+  //     });
+  //   });
+
+  //   return resultsInitial;
+  // };
 
   getFormattedData = () => {
     return {

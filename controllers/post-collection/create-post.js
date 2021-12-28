@@ -90,11 +90,13 @@ const addPostToDB = async (formattedPostData, uid, res) => {
     );
 
     return res.status(200).json({
+      code: 200,
       message: "Post Created Successfully",
     });
   } catch (err) {
     console.log("error in createTextPost", err);
     return res.status(500).json({
+      code: 500,
       message: "Internal Server Error",
     });
   }
