@@ -44,7 +44,7 @@ exports.updateProfileData = (req, res) => {
 };
 
 exports.profileDataCollection = async (req, res) => {
-  const response = await this.getProfileData(req.auth.id, req.body.targetProfileId);
+  const response = await this.getProfileData(req.auth.id, req.params.targetProfileId);
 
   return res.status(response.code).json(response);
 };
