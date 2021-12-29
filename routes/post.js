@@ -29,7 +29,7 @@ router.post(
 router.post("/createPollPost/:userId", isSignedIn, isAuthenticated, createPollPost);
 
 // TODO: Come back here... not completed.. Do it when connect to frontend
-router.post("/createImagePost/:userId", createImagePost);
+router.post("/createImagePost/:userId", isSignedIn, isAuthenticated, createImagePost);
 router.post("/createSlidePost/:userId", createSlidePost);
 
 // ** For Get Feed and Own Posts **

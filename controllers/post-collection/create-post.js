@@ -1,5 +1,6 @@
 const { TextPost, VideoPost, PDFPost, PollPost } = require("../../models/post");
 const { getFirestore } = require("firebase/firestore");
+const formidable = require("formidable");
 
 const {
   createAndStorePost,
@@ -47,16 +48,24 @@ exports.createPollPost = async (req, res) => {
 
 /// TODO: This is not completed.. Do it when connect to frontend
 exports.createImagePost = async (req, res) => {
-  console.log(req.body);
+  let form = new formidable.IncomingForm();
+    form.keepExtensions = true;
 
-  const { text, image } = req.body;
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        return res.status(400).json({
+          error: "Problem with Image",
+        });
+      }
+      console.log(files);
+      console.log(fields);
 
-  console.log("Here");
-  console.log(image);
+      res.json({
+        message: "Image Post Created Successfully",
+      });
+    });
 
-  res.json({
-    message: "Image Post Created Successfully",
-  });
+  
 };
 
 /// TODO: This is not completed.. Do it when connect to frontend
