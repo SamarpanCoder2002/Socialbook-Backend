@@ -4,8 +4,9 @@ const {
   PDFPost,
   PollPost,
   ImagePost,
+  SlidePost,
 } = require("../../models/post");
-const { getFirestore } = require("firebase/firestore");
+const { getFirestore, Firestore } = require("firebase/firestore");
 const formidable = require("formidable");
 const fs = require("fs");
 
@@ -17,6 +18,7 @@ const {
 } = require("./common");
 const { addNotification } = require("../notification");
 const { uploadFileInStorage } = require("./upload-in-storage");
+const { PostTypes } = require("../types/types");
 
 exports.createTextPost = async (req, res) => {
   const { text } = req.body;
@@ -96,7 +98,48 @@ exports.createImagePost = async (req, res) => {
 };
 
 /// TODO: This is not completed.. Do it when connect to frontend
-exports.createSlidePost = async (req, res) => {};
+exports.createSlidePost = async (req, res) => {
+  let form = new formidable.IncomingForm();
+  form.keepExtensions = true;
+
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      return res.status(404).json({
+        code: 404,
+        error: "Problem with Image",
+      });
+    }
+
+    const currentTime = Date.now();
+    const postData = {};
+
+    for (let field in fields) {
+      if (field !== "text")
+        postData[Number(field)] = {
+          type: PostTypes.Text,
+          data: fields[field],
+        };
+    }
+
+    for (let imgFile in files) {
+      postData[Number(imgFile)] = {
+        type: PostTypes.Image,
+        data: await uploadFileInStorage(
+          fs.readFileSync(files[imgFile].filepath),
+          `${currentTime}-slide-img.jpg`,
+          `${req.auth.id}/posts/slide/images`,
+          files[imgFile].mimetype
+        ),
+        alt: currentTime,
+      };
+    }
+
+    const slidePost = new SlidePost(fields.text || "", Object.values(postData));
+    const formattedPostData = slidePost.getFormattedData();
+
+    return await addPostToDB(formattedPostData, req.auth.id, res);
+  });
+};
 
 // ** Handle Post Addition in Database **
 const addPostToDB = async (formattedPostData, uid, res) => {

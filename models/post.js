@@ -71,6 +71,25 @@ class ImagePost {
 
 exports.ImagePost = ImagePost;
 
+class SlidePost{
+  constructor(text, slidesCollection){
+    this.text = text;
+    this.slidesCollection = slidesCollection;
+  }
+
+  getFormattedData = () => {
+    return {
+      type: PostTypes.Slide,
+      content: {
+        text: this.text,
+        slidesCollection: this.slidesCollection,
+      },
+    };
+  };
+}
+
+exports.SlidePost = SlidePost;
+
 class PollPost {
   constructor(text, question, options) {
     this.text = text;
