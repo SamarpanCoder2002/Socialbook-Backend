@@ -1,6 +1,13 @@
-const { TextPost, VideoPost, PDFPost, PollPost } = require("../../models/post");
+const {
+  TextPost,
+  VideoPost,
+  PDFPost,
+  PollPost,
+  ImagePost,
+} = require("../../models/post");
 const { getFirestore } = require("firebase/firestore");
 const formidable = require("formidable");
+const fs = require("fs");
 
 const {
   createAndStorePost,
@@ -9,6 +16,7 @@ const {
   addingPostIdConnectedUsersAndOwnAcc,
 } = require("./common");
 const { addNotification } = require("../notification");
+const { uploadFileInStorage } = require("./upload-in-storage");
 
 exports.createTextPost = async (req, res) => {
   const { text } = req.body;
@@ -48,24 +56,43 @@ exports.createPollPost = async (req, res) => {
 
 /// TODO: This is not completed.. Do it when connect to frontend
 exports.createImagePost = async (req, res) => {
-  let form = new formidable.IncomingForm();
+  try {
+    let form = new formidable.IncomingForm();
     form.keepExtensions = true;
 
     form.parse(req, async (err, fields, files) => {
       if (err) {
-        return res.status(400).json({
+        return res.status(404).json({
+          code: 404,
           error: "Problem with Image",
         });
       }
-      console.log(files);
-      console.log(fields);
 
-      res.json({
-        message: "Image Post Created Successfully",
-      });
+      const uploadedImageFiles = [];
+      const currentTime = Date.now();
+
+      for (let imgNum in files) {
+        const uploadedFileLink = await uploadFileInStorage(
+          fs.readFileSync(files[imgNum].filepath),
+          `${currentTime}-image-${imgNum}.jpg`,
+          `${req.auth.id}/posts/images`,
+          files[imgNum].mimetype
+        );
+        uploadedImageFiles.push(uploadedFileLink);
+      }
+
+      const imgPost = new ImagePost(fields.text || "", uploadedImageFiles);
+      const formattedPostData = imgPost.getFormattedData();
+
+      return await addPostToDB(formattedPostData, req.auth.id, res);
     });
-
-  
+  } catch (err) {
+    console.log("error in createTextPost", err);
+    return res.status(500).json({
+      code: 500,
+      message: "Internal Server Error",
+    });
+  }
 };
 
 /// TODO: This is not completed.. Do it when connect to frontend

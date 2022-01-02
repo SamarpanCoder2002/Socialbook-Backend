@@ -52,6 +52,25 @@ class PDFPost {
 }
 exports.PDFPost = PDFPost;
 
+class ImagePost {
+  constructor(text, imagesCollection) {
+    this.text = text;
+    this.imagesCollection = imagesCollection;
+  }
+
+  getFormattedData = () => {
+    return {
+      type: PostTypes.Image,
+      content: {
+        text: this.text,
+        imagesCollection: this.imagesCollection,
+      },
+    };
+  };
+}
+
+exports.ImagePost = ImagePost;
+
 class PollPost {
   constructor(text, question, options) {
     this.text = text;
@@ -63,20 +82,6 @@ class PollPost {
       };
     });
   }
-
-  // makeInitialResults = (options) => {
-  //   const resultsInitial = [];
-
-  //   options.forEach((option) => {
-  //     resultsInitial.push({
-  //       text: option,
-  //       votes: 0,
-  //     });
-  //   });
-
-  //   return resultsInitial;
-  // };
-
   getFormattedData = () => {
     return {
       type: PostTypes.Poll,
@@ -89,3 +94,5 @@ class PollPost {
   };
 }
 exports.PollPost = PollPost;
+
+
