@@ -6,7 +6,7 @@ const {
   ImagePost,
   SlidePost,
 } = require("../../models/post");
-const { getFirestore, Firestore } = require("firebase/firestore");
+const { getFirestore, Firestore, updateDoc } = require("firebase/firestore");
 const formidable = require("formidable");
 const fs = require("fs");
 

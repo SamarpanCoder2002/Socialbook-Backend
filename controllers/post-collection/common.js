@@ -5,6 +5,8 @@ const {
   setDoc,
   collection,
   addDoc,
+  updateDoc,
+  getFirestore,
 } = require("firebase/firestore");
 
 // ** Add Post to Post Collection **
@@ -95,4 +97,24 @@ exports.addingPostIdConnectedUsersAndOwnAcc = async (
       { merge: true }
     );
   }
+};
+
+exports.updatePollInformation = async (req, res) => {
+  const { newPollData, postId } = req.body;
+
+  updateDoc(doc(getFirestore(), Post.postsCollection, postId), newPollData, {
+    merge: true,
+  })
+    .then(() => {
+      return res.status(200).json({
+        code: 200,
+        message: "Poll Updated Successfully",
+      });
+    })
+    .catch((err) => {
+      return res.status(500).json({
+        code: 500,
+        message: "Internal Server Error",
+      });
+    });
 };

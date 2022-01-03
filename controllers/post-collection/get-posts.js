@@ -39,12 +39,14 @@ const getPosts = async (page, feed, res, authId) => {
       feed
     );
 
-    return res.json({
+    return res.status(200).json({
+      code: 200,
       message: "Feed Data",
       data: actualModifiedPostData,
     });
   } else {
-    return res.json({
+    return res.status(404).json({
+      code: 404,
       message: "Feed Data",
       data: [],
     });

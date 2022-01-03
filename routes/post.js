@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { isSignedIn, isAuthenticated } = require("../controllers/auth");
+const { updatePollInformation } = require("../controllers/post-collection/common");
 const {
   createTextPost,
   createVideoPost,
@@ -76,6 +77,13 @@ router.post(
   isSignedIn,
   isAuthenticated,
   insertComment
+);
+
+router.post(
+  "/updatePollInformation/:userId",
+  isSignedIn,
+  isAuthenticated,
+  updatePollInformation
 );
 
 module.exports = router;
