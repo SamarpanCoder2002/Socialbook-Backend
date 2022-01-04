@@ -96,7 +96,7 @@ class PollPost {
     this.question = question;
     this.options = options.map((option) => {
       return {
-        text: option,
+        text: option.split(" ").join("_"),
         votes: 0,
       };
     });

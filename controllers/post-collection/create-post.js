@@ -110,7 +110,7 @@ exports.createSlidePost = async (req, res) => {
       });
     }
 
-    const currentTime = Date.now();
+    
     const postData = {};
 
     for (let field in fields) {
@@ -122,6 +122,8 @@ exports.createSlidePost = async (req, res) => {
     }
 
     for (let imgFile in files) {
+      const currentTime = Date.now();
+      
       postData[Number(imgFile)] = {
         type: PostTypes.Image,
         data: await uploadFileInStorage(

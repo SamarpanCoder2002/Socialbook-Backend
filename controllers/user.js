@@ -31,10 +31,14 @@ exports.isUserPresent = (req, res, next) => {
         if (!snapShot.data()) {
           next();
         } else {
+          const {name, description, profilePic} = snapShot.data();
           res.status(200).json({
             code: 200,
             message: "User already present",
             isUserPresent: true,
+            name,
+            description,
+            profilePic,
           });
         }
       })
