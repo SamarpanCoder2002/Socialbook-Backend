@@ -16,7 +16,7 @@ const {
 } = require("../controllers/post-collection/engagement-inclusion");
 const {
   getFeedPosts,
-  getCurrentAccountPosts,
+  getParticularAccountPosts,
 } = require("../controllers/post-collection/get-posts");
 
 router.post(
@@ -59,10 +59,9 @@ router.post(
 // ** For Get Feed and Own Posts **
 router.get("/getFeedPosts/:userId", isSignedIn, isAuthenticated, getFeedPosts);
 router.get(
-  "/getMyPosts/:userId",
+  "/getParticularAccountPosts/:userId",
   isSignedIn,
-  isAuthenticated,
-  getCurrentAccountPosts
+  getParticularAccountPosts
 );
 
 // ** For Engagement Inclusion **

@@ -14,7 +14,6 @@ const {
   User,
   ConnectionType,
   AccountThings,
-  Post,
   Message,
 } = require("./types/types");
 

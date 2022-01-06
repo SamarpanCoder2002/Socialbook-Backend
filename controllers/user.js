@@ -2,12 +2,8 @@ const { getAuth } = require("firebase/auth");
 const { User, AccountThings } = require("./types/types");
 const {
   getFirestore,
-  collection,
-  getDocs,
   doc,
   setDoc,
-  where,
-  query,
   getDoc,
 } = require("firebase/firestore");
 const { addNotification } = require("./notification");

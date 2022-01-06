@@ -14,8 +14,8 @@ exports.getFeedPosts = async (req, res) =>
   await getPosts(req.query.page ?? 1, true, res, req.auth.id);
 
 // ** Current Account Created Post Fetching Controller **
-exports.getCurrentAccountPosts = async (req, res) =>
-  await getPosts(req.query.page ?? 1, false, res, req.auth.id);
+exports.getParticularAccountPosts = async (req, res) =>
+  await getPosts(req.query.page ?? 1, false, res, req.params.userId);
 
 // ** Manage to take all posts **
 const getPosts = async (page, feed, res, authId) => {
@@ -133,7 +133,7 @@ const getPostData = async (postRef) => {
   }
 };
 
-// ** Post Engagament Size Inclusion **
+// ** Post Engagament Inclusion **
 const engagementInclusion = async (db, postDataModified, postRef) => {
   postDataModified.engagement = {};
 
@@ -146,7 +146,9 @@ const engagementInclusion = async (db, postDataModified, postRef) => {
   for (let i = 0; i < engagement.length; i++) {
     if (engagement[i].data() && Object.keys(engagement[i].data()).length > 0) {
       const data = engagement[i].data();
-      const allRef = Object.keys(data).map((key) => data[key]);
+      const allRef = Object.keys(data).map((key) =>
+        engagement[i].id === "likes" ? key : data[key]
+      );
 
       postDataModified[Post.engagement][engagement[i].id] = allRef.reverse();
     } else {

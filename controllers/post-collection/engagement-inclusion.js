@@ -14,7 +14,7 @@ exports.insertComment = async (req, res) => {
   return await engagementInclusion(
     req.params.postId,
     Post.comments,
-    docData(Post.comments, req.auth.id, req.body.comment),
+    docData(Post.comments, req.auth.id, req.body),
     res
   );
 };
@@ -30,18 +30,20 @@ const engagementInclusion = async (postId, engagementDocId, newData, res) => {
     );
 
     res.status(200).json({
+      code: 200,
       message: "Operation Done",
     });
   } catch (err) {
     console.log("error in engagementInclusion", err);
 
     res.status(500).json({
+      code: 500,
       message: "Internal Server Error",
     });
   }
 };
 
-const docData = (type, uid, comment = "") => {
+const docData = (type, uid, body) => {
   if (type === Post.likes) {
     return {
       [uid]: Date.now(),
@@ -50,7 +52,10 @@ const docData = (type, uid, comment = "") => {
     return {
       [Date.now()]: {
         uid: uid,
-        comment: comment,
+        comment: body?.comment,
+        name: body?.name,
+        description: body?.description,
+        profilePic: body?.profilePic,
       },
     };
   }
