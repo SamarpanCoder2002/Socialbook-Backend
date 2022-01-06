@@ -1,10 +1,13 @@
 const { getAuth } = require("firebase/auth");
-const { User, AccountThings } = require("./types/types");
+const { User, AccountThings, Post, PostTypes } = require("./types/types");
 const {
   getFirestore,
   doc,
   setDoc,
   getDoc,
+  getDocs,
+  collection,
+  query,
 } = require("firebase/firestore");
 const { addNotification } = require("./notification");
 const { uploadFileInStorage } = require("./post-collection/upload-in-storage");
@@ -27,7 +30,7 @@ exports.isUserPresent = (req, res, next) => {
         if (!snapShot.data()) {
           next();
         } else {
-          const {name, description, profilePic} = snapShot.data();
+          const { name, description, profilePic } = snapShot.data();
           res.status(200).json({
             code: 200,
             message: "User already present",
@@ -68,8 +71,8 @@ exports.createUserAccount = async (req, res) => {
         message: "Session Expired. Please Sign In Again",
       });
     }
-    
-    if(!getAuth()){
+
+    if (!getAuth()) {
       return res.status(403).json({
         code: 403,
         message: "Session Expired. Please Sign In Again",
@@ -124,7 +127,7 @@ exports.createUserAccount = async (req, res) => {
 };
 
 const setProfileDataInDatabase = async (req, res, formExtractedData) => {
-  const { user, description, profilePicLink, interests } = formExtractedData;
+  const { user, description, profilePicLink } = formExtractedData;
 
   const auth = getAuth();
   const db = getFirestore();
@@ -134,13 +137,58 @@ const setProfileDataInDatabase = async (req, res, formExtractedData) => {
     name: user,
     profilePic: profilePicLink || "",
     description: description,
-    interests: JSON.parse(interests),
   });
 
   addNotification("😍 Your Account Created Successfully", `/feed`, req.auth.id);
+
+  await getSuggestedPosts(db, req.auth.id);
 
   return res.status(200).json({
     code: 200,
     message: "User Account Created Successfully",
   });
+};
+
+const getSuggestedPosts = async (db, uid) => {
+  const querySnapShot = await getDocs(
+    query(collection(db, Post.postsCollection))
+  ).catch((err) => {
+    console.log("Error is: ", err);
+  });
+
+  if (querySnapShot.docs?.length === 0) return;
+
+  let tempData = [];
+  const postCollectionData = {};
+
+  querySnapShot.docs.forEach((doc) => {
+    tempData.push(doc.id);
+  });
+  tempData = tempData.length <= 14 ? tempData : randomElements(tempData, 14);
+
+  for (let i = 0; i < tempData.length; i++) {
+    postCollectionData[Date.now() + i] = tempData[i];
+  }
+
+  setDoc(
+    doc(
+      db,
+      User.usersCollection,
+      uid,
+      AccountThings.feed,
+      AccountThings.feedCollection
+    ),
+    postCollectionData,
+    { merge: true }
+  );
+};
+
+const randomElements = (docsData, totalElements) => {
+  const pickedData = [];
+
+  for (let i = 0; i < totalElements;) {
+    const random = Math.floor(Math.random() * docsData.length);
+    !pickedData.includes(docsData[random]) && pickedData.push(docsData[random]) && i++;
+  }
+  return pickedData;
 };
