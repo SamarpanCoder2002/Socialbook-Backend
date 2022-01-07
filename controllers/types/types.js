@@ -18,6 +18,7 @@ exports.ConnectionType = {
   sent: "request-sent",
   received: "request-received",
   connected: "connected",
+  notConnected: "not-connected",
 };
 
 exports.PostTypes = {

@@ -9,10 +9,27 @@ const {
   removeConnectedUsers,
   withDrawSentRequest,
   removeIncomingConnectionRequest,
+  particularUserConnectionStatus,
 } = require("../controllers/connection");
 
-router.post("/sendConnectionRequest/:userId", isSignedIn, isAuthenticated, connectionRequest);
-router.post("/acceptConnectionRequest/:userId", isSignedIn, isAuthenticated, acceptRequest);
+router.post(
+  "/sendConnectionRequest/:userId",
+  isSignedIn,
+  isAuthenticated,
+  connectionRequest
+);
+router.post(
+  "/acceptConnectionRequest/:userId",
+  isSignedIn,
+  isAuthenticated,
+  acceptRequest
+);
+router.get(
+  "/particularUserConnectionStatus/:userId/:queryUserId",
+  isSignedIn,
+  isAuthenticated,
+  particularUserConnectionStatus
+);
 
 router.get(
   "/getConnections/:requiredConnectionType/:userId",

@@ -118,9 +118,9 @@ exports.getSpecificConnections = async (req, res) => {
 
   let connectionType = ConnectionType.connected;
 
-  if (req.params.requiredConnectionType === "received") {
+  if (req.params.requiredConnectionType === ConnectionType.received) {
     connectionType = ConnectionType.received;
-  } else if (req.params.requiredConnectionType === "sent") {
+  } else if (req.params.requiredConnectionType === ConnectionType.sent) {
     connectionType = ConnectionType.sent;
   }
 
@@ -261,6 +261,58 @@ exports.removeIncomingConnectionRequest = async (req, res) => {
     ConnectionType.received,
     ConnectionType.sent
   );
+};
+
+exports.particularUserConnectionStatus = async (req, res) => {
+  const { userId, queryUserId } = req.params;
+
+  getDoc(
+    doc(
+      getFirestore(),
+      User.usersCollection,
+      userId,
+      AccountThings.connections,
+      AccountThings.connectionsList
+    )
+  )
+    .then((docRef) => {
+      if (!docRef.exists()) {
+        return res.status(200).json({
+          code: 200,
+          status: ConnectionType.notConnected,
+        });
+      }
+
+      const data = docRef.data();
+
+      if (data[queryUserId] === ConnectionType.received) {
+        return res.status(200).json({
+          code: 200,
+          status: ConnectionType.received,
+        });
+      } else if (data[queryUserId] === ConnectionType.sent) {
+        return res.status(200).json({
+          code: 200,
+          status: ConnectionType.sent,
+        });
+      } else if (data[queryUserId] === ConnectionType.connected) {
+        return res.status(200).json({
+          code: 200,
+          status: ConnectionType.connected,
+        });
+      }else{
+        return res.status(200).json({
+          code: 200,
+          status: ConnectionType.notConnected,
+        });
+      }
+    })
+    .catch((err) => {
+      return res.status(500).json({
+        code: 500,
+        message: "Internal Server Error",
+      });
+    });
 };
 
 const removeCommonPart = async (
