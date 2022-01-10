@@ -24,6 +24,7 @@ exports.updateProfileData = (req, res) => {
       form.parse(req, async (err, fields, file) => {
         if (err) {
           return res.status(400).json({
+            code: 400,
             error: "Problem with Image",
           });
         }
@@ -102,6 +103,7 @@ exports.updateProfileData = (req, res) => {
     .catch((err) => {
       console.log("error in updateProfileData", err);
       return res.status(500).json({
+        code: 500,
         message: "Internal Server Error",
       });
     });

@@ -5,8 +5,14 @@ const {
   getDoc,
   updateDoc,
   deleteField,
+  onSnapshot,
+  collection,
+  query,
 } = require("firebase/firestore");
-const { User, AccountThings } = require("./types/types");
+const {
+  User,
+  AccountThings,
+} = require("./types/types");
 
 exports.addNotification = async (
   message,
@@ -105,4 +111,27 @@ exports.deleteParticularNotification = async (req, res) => {
       message: "Internal Server Error",
     });
   }
+};
+
+exports.getRealTimeNotifications = async (userId, io, socketRefData) => {
+  const db = getFirestore();
+
+  const queryData = query(
+    collection(db, User.usersCollection, userId, AccountThings.notification)
+  );
+
+  const socketId = socketRefData[0].socketId;
+
+  const unsubscribe = onSnapshot(queryData, (snapshot) => {
+    let totalNewNotification = 0;
+
+    snapshot.docChanges().forEach((change) => {
+      console.log("change: ", change.type);
+      if (change.type === "modified") totalNewNotification++;
+    });
+
+    io.to(socketId).emit("totalUpdatedNotification", totalNewNotification);
+  });
+
+  return unsubscribe;
 };

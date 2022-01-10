@@ -8,7 +8,7 @@ const { initializeApp } = require("firebase/app");
 
 const app = express();
 
-/// My Routes
+// ** My Routes
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const connectionRoutes = require("./routes/connection");
@@ -16,6 +16,7 @@ const profileRoutes = require("./routes/profile");
 const postRoutes = require("./routes/post");
 const notificationRoutes = require("./routes/notification");
 const messagingRoutes = require("./routes/messaging");
+const { getRealTimeNotifications } = require("./controllers/notification");
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
@@ -27,16 +28,16 @@ const firebaseConfig = {
   measurementId: process.env.FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase
+// ** Initialize Firebase
 initializeApp(firebaseConfig);
 
-/// Middleware
+// ** Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors());
 
-// My Routes
+// ** My Routes
 app.use("/api", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api", connectionRoutes);
@@ -45,32 +46,53 @@ app.use("/api", postRoutes);
 app.use("/api", notificationRoutes);
 app.use("/api", messagingRoutes);
 
-// TODO: Socket IO Implementation
-// const server = require('http').createServer(app);
+// ** Socket IO Implementation
+const server = require("http").createServer(app);
+let activeUsersCollection = [];
+const addUser = (userId, socketId) => {
+  !activeUsersCollection.some((user) => user.userId === userId) &&
+    activeUsersCollection.push({ userId, socketId });
+};
 
-// const io = require('socket.io')(server, {
-//   transports: ['websocket', 'polling']
-// });
+const removeUser = (socketId) => {
+  activeUsersCollection = activeUsersCollection.filter(
+    (user) => user.socketId !== socketId
+  );
+};
 
-// let tick = 0;
-// // 1. listen for socket connections
-// io.on('connection', client => {
-//   setInterval(() => {
-//     // 2. every second, emit a 'cpu' event to user
-//     os.cpuUsage(cpuPercent => {
-//       client.emit('cpu', {
-//         name: tick++,
-//         value: cpuPercent
-//       });
-//     });
-//   }, 1000);
-// });
+const io = require("socket.io")(server, {
+  transports: ["websocket", "polling"],
+  cors: {
+    origin: "http://localhost:3000",
+  },
+});
+io.on("connection", (socket) => {
+  console.log("New User Conected");
+  let realTimeNotificationUnsubscribe;
 
-// server.listen(8000, () => {
-//   console.log('listening on *:8000');
-// });
+  socket.on("addUser", (userId) => {
+    addUser(userId, socket.id);
+    io.emit("getactiveUsersCollection", activeUsersCollection);
+  });
 
-/// App Listening
-app.listen(8000, () => {
-  console.log("Server started on port 8000");
+  socket.on("getRealTimeNotifications", async (user) => {
+    const unsubscribe = await getRealTimeNotifications(
+      user.userId,
+      io,
+      activeUsersCollection.filter(
+        (iterateUser) => iterateUser.userId === user.userId
+      )
+    );
+    realTimeNotificationUnsubscribe = unsubscribe;
+  });
+
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
+    removeUser(socket.id);
+    realTimeNotificationUnsubscribe && realTimeNotificationUnsubscribe();
+  });
+});
+
+server.listen(8000, () => {
+  console.log("listening on *:8000");
 });
