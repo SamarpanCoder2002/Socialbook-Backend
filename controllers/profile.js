@@ -119,7 +119,12 @@ const updatedProfileDataEndMessage = (
   addNotification(
     "Your Profile Updated Successfully 🎉",
     `/${uid}/profile`,
-    uid
+    uid,
+    {
+      name: updatedName,
+      description: updatedDescription,
+      profilePic: updatedProfilePic,
+    }
   );
 
   return res.status(200).json({
