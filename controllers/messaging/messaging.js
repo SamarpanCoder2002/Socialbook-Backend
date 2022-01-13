@@ -12,62 +12,71 @@ const {
 const { User, AccountThings, Message } = require("../types/types");
 
 exports.getChatBoxId = (req, res) => {
-  const { partnerId } = req.body;
-  const userId = req.auth.id;
+  try {
+    const { partnerId } = req.body;
+    const userId = req.auth.id;
 
-  const db = getFirestore();
+    const db = getFirestore();
 
-  getDocs(
-    query(
-      collection(db, User.usersCollection, userId, AccountThings.messaging),
-      where(AccountThings.chatPartnerId, "==", partnerId)
-    )
-  ).then(async (chatBox) => {
-    if (chatBox.docs.length > 0) {
-      return res.status(200).json({
-        message: "Chat box already exists",
-        chatBoxId: chatBox.docs[0].id,
-      });
-    } else {
-      const docRef = await addDoc(
-        collection(db, Message.messagesCollection),
-        {}
-      );
+    getDocs(
+      query(
+        collection(db, User.usersCollection, userId, AccountThings.messaging),
+        where(AccountThings.chatPartnerId, "==", partnerId)
+      )
+    ).then(async (chatBox) => {
+      if (chatBox.docs.length > 0) {
+        return res.status(200).json({
+          code: 200,
+          message: "Chat box already exists",
+          chatBoxId: chatBox.docs[0].id,
+        });
+      } else {
+        const docRef = await addDoc(
+          collection(db, Message.messagesCollection),
+          {}
+        );
 
-      await setDoc(
-        doc(
-          db,
-          User.usersCollection,
-          userId,
-          AccountThings.messaging,
-          docRef.id
-        ),
-        {
-          partnerId: partnerId,
-        },
-        { merge: true }
-      );
+        await setDoc(
+          doc(
+            db,
+            User.usersCollection,
+            userId,
+            AccountThings.messaging,
+            docRef.id
+          ),
+          {
+            partnerId: partnerId,
+          },
+          { merge: true }
+        );
 
-      await setDoc(
-        doc(
-          db,
-          User.usersCollection,
-          partnerId,
-          AccountThings.messaging,
-          docRef.id
-        ),
-        {
-          partnerId: userId,
-        },
-        { merge: true }
-      );
+        await setDoc(
+          doc(
+            db,
+            User.usersCollection,
+            partnerId,
+            AccountThings.messaging,
+            docRef.id
+          ),
+          {
+            partnerId: userId,
+          },
+          { merge: true }
+        );
 
-      return res.status(200).json({
-        message: "Chat box created",
-        chatBoxId: docRef.id,
-      });
-    }
-  });
+        return res.status(200).json({
+          code: 200,
+          message: "Chat box created",
+          chatBoxId: docRef.id,
+        });
+      }
+    });
+  } catch (e) {
+    return res.status(500).json({
+      code: 500,
+      message: "Internal Server Error",
+    });
+  }
 };
 
 exports.addMessageToChatBox = (req, res) => {
@@ -125,6 +134,35 @@ exports.getAllChatMessages = (req, res) => {
       console.log("error in getAllChatMessages", err);
 
       return res.status(500).json({
+        message: "Internal Server Error",
+      });
+    });
+};
+
+exports.getAllChatConnections = (req, res) => {
+  const userId = req.auth.id;
+  const db = getFirestore();
+
+  getDocs(
+    query(collection(db, User.usersCollection, userId, AccountThings.messaging))
+  )
+    .then((querySnapShot) => {
+      const chatConnections = querySnapShot.docs.map((doc) => {
+        return {
+          partnerId: doc.data().partnerId,
+          chatBoxId: doc.id,
+        };
+      });
+      return res.status(200).json({
+        code: 200,
+        message: "Chat connections fetched",
+        chatConnections: chatConnections,
+      });
+    })
+    .catch((err) => {
+      console.log("error in getAllChatConnections", err);
+      return res.status(500).json({
+        code: 500,
         message: "Internal Server Error",
       });
     });

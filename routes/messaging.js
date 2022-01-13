@@ -4,6 +4,7 @@ const {
   getChatBoxId,
   getAllChatMessages,
   addMessageToChatBox,
+  getAllChatConnections,
 } = require("../controllers/messaging/messaging");
 const router = express.Router();
 
@@ -19,6 +20,14 @@ router.post(
   isAuthenticated,
   addMessageToChatBox
 );
+
+router.get(
+  "/messaging/getAllChatConnections/:userId",
+  isSignedIn,
+  isAuthenticated,
+  getAllChatConnections
+);
+
 router.get(
   "/messaging/getAllChatMessages/:userId",
   isSignedIn,
