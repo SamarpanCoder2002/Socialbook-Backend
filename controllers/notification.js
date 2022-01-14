@@ -9,10 +9,7 @@ const {
   collection,
   query,
 } = require("firebase/firestore");
-const {
-  User,
-  AccountThings,
-} = require("./types/types");
+const { User, AccountThings } = require("./types/types");
 
 exports.addNotification = async (
   message,
