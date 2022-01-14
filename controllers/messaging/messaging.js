@@ -13,7 +13,15 @@ const { User, AccountThings, Message } = require("../types/types");
 
 exports.getChatBoxId = (req, res) => {
   try {
-    const { partnerId } = req.body;
+    const {
+      partnerId,
+      partnerName,
+      partnerDescription,
+      partnerProfilePic,
+      currentName,
+      currentDescription,
+      currentProfilePic,
+    } = req.body;
     const userId = req.auth.id;
 
     const db = getFirestore();
@@ -25,6 +33,23 @@ exports.getChatBoxId = (req, res) => {
       )
     ).then(async (chatBox) => {
       if (chatBox.docs.length > 0) {
+        setDoc(
+          doc(
+            db,
+            User.usersCollection,
+            userId,
+            AccountThings.messaging,
+            chatBox.docs[0].id
+          ),
+          {
+            partnerId,
+            partnerName,
+            partnerDescription,
+            partnerProfilePic,
+          },
+          { merge: true }
+        );
+
         return res.status(200).json({
           code: 200,
           message: "Chat box already exists",
@@ -45,7 +70,10 @@ exports.getChatBoxId = (req, res) => {
             docRef.id
           ),
           {
-            partnerId: partnerId,
+            partnerId,
+            partnerName,
+            partnerDescription,
+            partnerProfilePic,
           },
           { merge: true }
         );
@@ -60,6 +88,9 @@ exports.getChatBoxId = (req, res) => {
           ),
           {
             partnerId: userId,
+            partnerName: currentName,
+            partnerDescription: currentDescription,
+            partnerProfilePic: currentProfilePic,
           },
           { merge: true }
         );
@@ -148,9 +179,18 @@ exports.getAllChatConnections = (req, res) => {
   )
     .then((querySnapShot) => {
       const chatConnections = querySnapShot.docs.map((doc) => {
+        const {
+          partnerId,
+          partnerName,
+          partnerDescription,
+          partnerProfilePic,
+        } = doc.data();
         return {
-          partnerId: doc.data().partnerId,
+          partnerId: partnerId,
           chatBoxId: doc.id,
+          partnerName: partnerName,
+          partnerDescription: partnerDescription,
+          partnerProfilePic: partnerProfilePic,
         };
       });
       return res.status(200).json({
