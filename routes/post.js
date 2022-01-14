@@ -63,6 +63,7 @@ router.get(
   isSignedIn,
   getParticularAccountPosts
 );
+router.get("/getParticularPost/:userId/:postId", isSignedIn, isAuthenticated);
 
 // ** For Engagement Inclusion **
 router.post(
