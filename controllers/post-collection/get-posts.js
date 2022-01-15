@@ -17,6 +17,24 @@ exports.getFeedPosts = async (req, res) =>
 exports.getParticularAccountPosts = async (req, res) =>
   await getPosts(req.query.page ?? 1, false, res, req.params.userId);
 
+exports.getParticularPost = async (req, res) => {
+  try {
+    const postConsizeData = await getPostData(req.params.postId);
+    await postHolderDataInclusion(postConsizeData, {});
+    
+    return res.status(200).json({
+      code: 200,
+      data: postConsizeData,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      code: 500,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 // ** Manage to take all posts **
 const getPosts = async (page, feed, res, authId) => {
   const db = getFirestore();

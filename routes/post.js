@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const { isSignedIn, isAuthenticated } = require("../controllers/auth");
-const { updatePollInformation } = require("../controllers/post-collection/common");
+const {
+  updatePollInformation,
+} = require("../controllers/post-collection/common");
 const {
   createTextPost,
   createVideoPost,
@@ -17,6 +19,7 @@ const {
 const {
   getFeedPosts,
   getParticularAccountPosts,
+  getParticularPost,
 } = require("../controllers/post-collection/get-posts");
 
 router.post(
@@ -63,7 +66,12 @@ router.get(
   isSignedIn,
   getParticularAccountPosts
 );
-router.get("/getParticularPost/:userId/:postId", isSignedIn, isAuthenticated);
+router.get(
+  "/getParticularPost/:userId/:postId",
+  isSignedIn,
+  isAuthenticated,
+  getParticularPost
+);
 
 // ** For Engagement Inclusion **
 router.post(
