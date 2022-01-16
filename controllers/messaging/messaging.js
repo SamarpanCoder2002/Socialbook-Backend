@@ -9,7 +9,13 @@ const {
   addDoc,
   getDoc,
 } = require("firebase/firestore");
-const { User, AccountThings, Message } = require("../types/types");
+const {
+  User,
+  AccountThings,
+  Message,
+  ChatMsgTypes,
+} = require("../types/types");
+const formidable = require("formidable");
 
 exports.getChatBoxId = (req, res) => {
   try {
@@ -111,27 +117,43 @@ exports.getChatBoxId = (req, res) => {
 };
 
 exports.addMessageToChatBox = (req, res) => {
-  const { chatBoxId, message, creatorUserId } = req.body;
-  const db = getFirestore();
+  let form = new formidable.IncomingForm();
+  form.keepExtensions = true;
 
-  setDoc(
-    doc(db, Message.messagesCollection, chatBoxId),
-    {
-      [Date.now()]: { [creatorUserId]: message },
-    },
-    { merge: true }
-  )
-    .then(() => {
-      return res.status(200).json({
-        message: "Message added to chat box",
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      return res.status(404).json({
+        code: 404,
+        error: "Problem with Image",
       });
-    })
-    .catch((err) => {
-      console.log("error in addMessageToChatBox", err);
-      return res.status(500).json({
-        message: "Internal Server Error",
+    }
+
+    const { chatBoxId, message, senderId, receiverId, type } = fields;
+    const db = getFirestore();
+
+    if (type !== ChatMsgTypes.text) return;
+
+    setDoc(
+      doc(db, Message.messagesCollection, chatBoxId),
+      {
+        [Date.now()]: { [senderId]: message },
+      },
+      { merge: true }
+    )
+      .then(() => {
+        return res.status(200).json({
+          code: 200,
+          message: "Message added to chat box",
+        });
+      })
+      .catch((err) => {
+        console.log("error in addMessageToChatBox", err);
+        return res.status(500).json({
+          code: 500,
+          message: "Internal Server Error",
+        });
       });
-    });
+  });
 };
 
 exports.getAllChatMessages = (req, res) => {
