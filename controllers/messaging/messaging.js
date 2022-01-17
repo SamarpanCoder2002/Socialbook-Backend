@@ -124,7 +124,7 @@ exports.addMessageToChatBox = (req, res) => {
     if (err) {
       return res.status(404).json({
         code: 404,
-        error: "Problem with Image",
+        error: "Problem with incoming Image",
       });
     }
 
