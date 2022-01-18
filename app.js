@@ -17,6 +17,7 @@ const postRoutes = require("./routes/post");
 const notificationRoutes = require("./routes/notification");
 const messagingRoutes = require("./routes/messaging");
 const { getRealTimeNotifications } = require("./controllers/notification");
+const { SocketEvents } = require("./controllers/types/types");
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
@@ -66,16 +67,36 @@ const io = require("socket.io")(server, {
     origin: "http://localhost:3000",
   },
 });
-io.on("connection", (socket) => {
+
+io.on(SocketEvents.connection, (socket) => {
   console.log("New User Conected");
   let realTimeNotificationUnsubscribe;
 
-  socket.on("addUser", (userId) => {
+  socket.on(SocketEvents.addUser, (userId) => {
     addUser(userId, socket.id);
-    io.emit("getactiveUsersCollection", activeUsersCollection);
+    io.emit(SocketEvents.getActiveUsers, activeUsersCollection);
   });
 
-  socket.on("getRealTimeNotifications", async (user) => {
+  socket.on("addChatTextMessages", (chatBoxData) => {
+    const {chatBoxId, receiverId, senderId, message} = chatBoxData;
+    console.log("ChatBoxId: ", chatBoxId);
+    console.log("ReceiverId: ", receiverId);
+    console.log("SenderId: ", senderId);
+    console.log("Message: ", message);
+    console.log("\n\n\n\n\n\n");
+
+    console.log(activeUsersCollection);
+
+    const filtered = activeUsersCollection.filter(
+      (iterateUser) => iterateUser.userId === receiverId
+    )
+
+    console.log("Receiver Socket id: ", filtered[0].socketId);
+
+    io.to(filtered[0].socketId).emit("incomingMessage", {message, senderId, chatBoxId});
+  });
+
+  socket.on(SocketEvents.realTimeNotification, async (user) => {
     const unsubscribe = await getRealTimeNotifications(
       user.userId,
       io,
@@ -86,7 +107,7 @@ io.on("connection", (socket) => {
     realTimeNotificationUnsubscribe = unsubscribe;
   });
 
-  socket.on("disconnect", () => {
+  socket.on(SocketEvents.disconnect, () => {
     console.log("user disconnected");
     removeUser(socket.id);
     realTimeNotificationUnsubscribe && realTimeNotificationUnsubscribe();

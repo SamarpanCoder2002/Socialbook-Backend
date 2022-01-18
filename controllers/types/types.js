@@ -50,3 +50,13 @@ exports.ChatMsgTypes = {
   text: "text",
   image: "image",
 };
+
+exports.SocketEvents = {
+  newMessage: "newMessage",
+  realTimeNotification: "getRealTimeNotifications",
+  addUser: "addUser",
+  getUsers:"getUsers",
+  getActiveUsers: "getactiveUsersCollection",
+  disconnect: "disconnect",
+  connection: "connection"
+}
