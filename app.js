@@ -78,22 +78,22 @@ io.on(SocketEvents.connection, (socket) => {
   });
 
   socket.on("addChatTextMessages", (chatBoxData) => {
-    const {chatBoxId, receiverId, senderId, message} = chatBoxData;
-    console.log("ChatBoxId: ", chatBoxId);
-    console.log("ReceiverId: ", receiverId);
-    console.log("SenderId: ", senderId);
-    console.log("Message: ", message);
-    console.log("\n\n\n\n\n\n");
-
-    console.log(activeUsersCollection);
-
+    const { chatBoxId, receiverId, senderId, message } = chatBoxData;
     const filtered = activeUsersCollection.filter(
       (iterateUser) => iterateUser.userId === receiverId
-    )
+    );
 
-    console.log("Receiver Socket id: ", filtered[0].socketId);
+    console.log(filtered[0]);
+    
+    if (!filtered.length) return;
 
-    io.to(filtered[0].socketId).emit("incomingMessage", {message, senderId, chatBoxId});
+    console.log("after: ", filtered[0]);
+
+    io.to(filtered[0].socketId).emit("incomingMessage", {
+      message,
+      senderId,
+      chatBoxId,
+    });
   });
 
   socket.on(SocketEvents.realTimeNotification, async (user) => {
