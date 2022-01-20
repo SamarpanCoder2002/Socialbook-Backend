@@ -16,6 +16,8 @@ const {
   ChatMsgTypes,
 } = require("../types/types");
 const formidable = require("formidable");
+const { uploadFileInStorage } = require("../post-collection/upload-in-storage");
+const fs = require("fs");
 
 exports.getChatBoxId = (req, res) => {
   try {
@@ -128,32 +130,72 @@ exports.addMessageToChatBox = (req, res) => {
       });
     }
 
-    const { chatBoxId, message, senderId, receiverId, type } = fields;
-    const db = getFirestore();
+    const { type } = fields;
 
-    if (type !== ChatMsgTypes.text) return;
-
-    setDoc(
-      doc(db, Message.messagesCollection, chatBoxId),
-      {
-        [Date.now()]: { [senderId]: message },
-      },
-      { merge: true }
-    )
-      .then(() => {
-        return res.status(200).json({
-          code: 200,
-          message: "Message added to chat box",
-        });
-      })
-      .catch((err) => {
-        console.log("error in addMessageToChatBox", err);
-        return res.status(500).json({
-          code: 500,
-          message: "Internal Server Error",
-        });
-      });
+    if (type !== ChatMsgTypes.text)
+      return await sendImageMessage(fields, res, files.message);
+    return sendTextMessage(fields, res);
   });
+};
+
+const sendImageMessage = async (fields, res, rawImgFile) => {
+  const db = getFirestore();
+  const currentTime = Date.now();
+  const { chatBoxId, senderId } = fields;
+
+  const uploadedFileLink = await uploadFileInStorage(
+    fs.readFileSync(rawImgFile.filepath),
+    `${currentTime}-image-${senderId}.jpg`,
+    `messageBox/${chatBoxId}/images`,
+    rawImgFile.mimetype
+  );
+
+  setDoc(
+    doc(db, Message.messagesCollection, chatBoxId),
+    {
+      [Date.now()]: { [senderId]: uploadedFileLink },
+    },
+    { merge: true }
+  )
+    .then(() => {
+      return res.status(200).json({
+        code: 200,
+        message: "Message added to chat box",
+      });
+    })
+    .catch((err) => {
+      console.log("error in addMessageToChatBox", err);
+      return res.status(500).json({
+        code: 500,
+        message: "Internal Server Error",
+      });
+    });
+};
+
+const sendTextMessage = (fields, res) => {
+  const db = getFirestore();
+  const { chatBoxId, message, senderId } = fields;
+
+  setDoc(
+    doc(db, Message.messagesCollection, chatBoxId),
+    {
+      [Date.now()]: { [senderId]: message },
+    },
+    { merge: true }
+  )
+    .then(() => {
+      return res.status(200).json({
+        code: 200,
+        message: "Message added to chat box",
+      });
+    })
+    .catch((err) => {
+      console.log("error in addMessageToChatBox", err);
+      return res.status(500).json({
+        code: 500,
+        message: "Internal Server Error",
+      });
+    });
 };
 
 exports.getAllChatMessages = (req, res) => {

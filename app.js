@@ -83,11 +83,7 @@ io.on(SocketEvents.connection, (socket) => {
       (iterateUser) => iterateUser.userId === receiverId
     );
 
-    console.log(filtered[0]);
-    
     if (!filtered.length) return;
-
-    console.log("after: ", filtered[0]);
 
     io.to(filtered[0].socketId).emit("incomingMessage", {
       message,
