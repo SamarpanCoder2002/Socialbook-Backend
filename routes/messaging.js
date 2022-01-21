@@ -29,7 +29,7 @@ router.get(
 );
 
 router.get(
-  "/messaging/getAllChatMessages/:userId",
+  "/messaging/getPaginatedChatMessages/:userId/:pageId/:chatBoxId",
   isSignedIn,
   isAuthenticated,
   getAllChatMessages

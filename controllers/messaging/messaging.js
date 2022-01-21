@@ -146,7 +146,8 @@ const sendImageMessage = async (fields, res, rawImgFile) => {
   if (rawImgFile.size > 2000000) {
     return res.status(400).json({
       code: 400,
-      message: "Last Message Picture size too large... Please upload a Picture Within 2MB",
+      message:
+        "Last Message Picture size too large... Please upload a Picture Within 2MB",
     });
   }
 
@@ -160,7 +161,11 @@ const sendImageMessage = async (fields, res, rawImgFile) => {
   setDoc(
     doc(db, Message.messagesCollection, chatBoxId),
     {
-      [Date.now()]: { [senderId]: uploadedFileLink, type: ChatMsgTypes.image },
+      [Date.now()]: {
+        message: uploadedFileLink,
+        type: ChatMsgTypes.image,
+        holder: senderId,
+      },
     },
     { merge: true }
   )
@@ -187,7 +192,7 @@ const sendTextMessage = (fields, res) => {
   setDoc(
     doc(db, Message.messagesCollection, chatBoxId),
     {
-      [Date.now()]: { [senderId]: message, type: ChatMsgTypes.text },
+      [Date.now()]: { message, type: ChatMsgTypes.text, holder: senderId },
     },
     { merge: true }
   )
@@ -207,25 +212,36 @@ const sendTextMessage = (fields, res) => {
 };
 
 exports.getAllChatMessages = (req, res) => {
-  const { chatBoxId } = req.body;
+  const chatBoxId = req.params.chatBoxId;
   const db = getFirestore();
+  const pageId = Number(req.params.pageId) - 1 || 0;
 
   getDoc(doc(db, Message.messagesCollection, chatBoxId))
     .then((messages) => {
       if (messages.exists) {
         const messagesCollection = Object.entries(messages.data()).map(
           ([time, message]) => {
-            return [Number(time), message];
+            return [Number(time), { ...message, time: Number(time) }];
           }
         );
 
-        messagesCollection.sort(
-          ([firstMsgTime], [secondMsgTime]) => firstMsgTime - secondMsgTime
+        messagesCollection.sort((first, second) => second[0] - first[0]);
+
+        const paginatedMessagesCollection = messagesCollection.slice(
+          pageId * 10,
+          pageId * 10 + 10
         );
 
+        paginatedMessagesCollection.sort(
+          (first, second) => first[0] - second[0]
+        );
+
+        console.log("paginatedMessagesCollection", paginatedMessagesCollection?.map((message) => message[1]));
+
         return res.status(200).json({
+          code: 200,
           message: "Messages fetched",
-          messages: messagesCollection.map(([, message]) => message),
+          data: paginatedMessagesCollection?.map((message) => message[1]) || [],
         });
       }
       return res.status(404).json({
