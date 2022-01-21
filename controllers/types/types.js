@@ -58,5 +58,7 @@ exports.SocketEvents = {
   getUsers:"getUsers",
   getActiveUsers: "getactiveUsersCollection",
   disconnect: "disconnect",
-  connection: "connection"
+  connection: "connection",
+  sendChatMessage: "sendChatMessage",
+  acceptIncomingChatMessage: "acceptIncomingChatMessage",
 }

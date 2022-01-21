@@ -77,7 +77,7 @@ io.on(SocketEvents.connection, (socket) => {
     io.emit(SocketEvents.getActiveUsers, activeUsersCollection);
   });
 
-  socket.on("addChatTextMessages", (chatBoxData) => {
+  socket.on(SocketEvents.sendChatMessage, (chatBoxData) => {
     const { chatBoxId, receiverId, senderId, message, type } = chatBoxData;
     const filtered = activeUsersCollection.filter(
       (iterateUser) => iterateUser.userId === receiverId
@@ -85,11 +85,11 @@ io.on(SocketEvents.connection, (socket) => {
 
     if (!filtered.length) return;
 
-    io.to(filtered[0].socketId).emit("incomingMessage", {
+    io.to(filtered[0].socketId).emit(SocketEvents.acceptIncomingChatMessage, {
       message,
       senderId,
       chatBoxId,
-      type
+      type,
     });
   });
 
