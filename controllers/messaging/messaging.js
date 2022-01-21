@@ -143,6 +143,13 @@ const sendImageMessage = async (fields, res, rawImgFile) => {
   const currentTime = Date.now();
   const { chatBoxId, senderId } = fields;
 
+  if (rawImgFile.size > 2000000) {
+    return res.status(400).json({
+      code: 400,
+      message: "Last Message Picture size too large... Please upload a Picture Within 2MB",
+    });
+  }
+
   const uploadedFileLink = await uploadFileInStorage(
     fs.readFileSync(rawImgFile.filepath),
     `${currentTime}-image-${senderId}.jpg`,
@@ -153,7 +160,7 @@ const sendImageMessage = async (fields, res, rawImgFile) => {
   setDoc(
     doc(db, Message.messagesCollection, chatBoxId),
     {
-      [Date.now()]: { [senderId]: uploadedFileLink },
+      [Date.now()]: { [senderId]: uploadedFileLink, type: ChatMsgTypes.image },
     },
     { merge: true }
   )
@@ -161,6 +168,7 @@ const sendImageMessage = async (fields, res, rawImgFile) => {
       return res.status(200).json({
         code: 200,
         message: "Message added to chat box",
+        data: uploadedFileLink,
       });
     })
     .catch((err) => {
@@ -179,7 +187,7 @@ const sendTextMessage = (fields, res) => {
   setDoc(
     doc(db, Message.messagesCollection, chatBoxId),
     {
-      [Date.now()]: { [senderId]: message },
+      [Date.now()]: { [senderId]: message, type: ChatMsgTypes.text },
     },
     { merge: true }
   )

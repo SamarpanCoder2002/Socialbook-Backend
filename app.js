@@ -78,7 +78,7 @@ io.on(SocketEvents.connection, (socket) => {
   });
 
   socket.on("addChatTextMessages", (chatBoxData) => {
-    const { chatBoxId, receiverId, senderId, message } = chatBoxData;
+    const { chatBoxId, receiverId, senderId, message, type } = chatBoxData;
     const filtered = activeUsersCollection.filter(
       (iterateUser) => iterateUser.userId === receiverId
     );
@@ -89,6 +89,7 @@ io.on(SocketEvents.connection, (socket) => {
       message,
       senderId,
       chatBoxId,
+      type
     });
   });
 
