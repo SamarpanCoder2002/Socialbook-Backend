@@ -28,11 +28,13 @@ router.get(
   getAllChatConnections
 );
 
-router.get(
-  "/messaging/getPaginatedChatMessages/:userId/:pageId/:chatBoxId",
-  isSignedIn,
-  isAuthenticated,
-  getAllChatMessages
-);
+// router.get(
+//   "/messaging/getPaginatedChatMessages/:userId/:pageId/:chatBoxId",
+//   isSignedIn,
+//   isAuthenticated,
+//   getAllChatMessages
+// );
+
+router.get("/messaging/getAllChatMessages/:userId/:chatBoxId", isSignedIn, isAuthenticated, getAllChatMessages);
 
 module.exports = router;

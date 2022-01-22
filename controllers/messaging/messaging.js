@@ -211,10 +211,54 @@ const sendTextMessage = (fields, res) => {
     });
 };
 
+// exports.getPaginatedChatMesssages = (req, res) => {
+//   const chatBoxId = req.params.chatBoxId;
+//   const db = getFirestore();
+//   const pageId = Number(req.params.pageId) - 1 || 0;
+
+//   getDoc(doc(db, Message.messagesCollection, chatBoxId))
+//     .then((messages) => {
+//       if (messages.exists) {
+//         const messagesCollection = Object.entries(messages.data()).map(
+//           ([time, message]) => {
+//             return [Number(time), { ...message, time: Number(time) }];
+//           }
+//         );
+
+//         messagesCollection.sort((first, second) => second[0] - first[0]);
+
+//         const paginatedMessagesCollection = messagesCollection.slice(
+//           pageId * 10,
+//           pageId * 10 + 10
+//         );
+
+//         paginatedMessagesCollection.sort(
+//           (first, second) => first[0] - second[0]
+//         );
+
+//         return res.status(200).json({
+//           code: 200,
+//           message: "Messages fetched",
+//           data: paginatedMessagesCollection?.map((message) => message[1]) || [],
+//         });
+//       }
+//       return res.status(404).json({
+//         message: "No Messages Found",
+//         messages: [],
+//       });
+//     })
+//     .catch((err) => {
+//       console.log("error in getAllChatMessages", err);
+
+//       return res.status(500).json({
+//         message: "Internal Server Error",
+//       });
+//     });
+// };
+
 exports.getAllChatMessages = (req, res) => {
   const chatBoxId = req.params.chatBoxId;
   const db = getFirestore();
-  const pageId = Number(req.params.pageId) - 1 || 0;
 
   getDoc(doc(db, Message.messagesCollection, chatBoxId))
     .then((messages) => {
@@ -225,23 +269,12 @@ exports.getAllChatMessages = (req, res) => {
           }
         );
 
-        messagesCollection.sort((first, second) => second[0] - first[0]);
-
-        const paginatedMessagesCollection = messagesCollection.slice(
-          pageId * 10,
-          pageId * 10 + 10
-        );
-
-        paginatedMessagesCollection.sort(
-          (first, second) => first[0] - second[0]
-        );
-
-        console.log("paginatedMessagesCollection", paginatedMessagesCollection?.map((message) => message[1]));
+        messagesCollection.sort((first, second) => first[0] - second[0]);
 
         return res.status(200).json({
           code: 200,
           message: "Messages fetched",
-          data: paginatedMessagesCollection?.map((message) => message[1]) || [],
+          data: messagesCollection?.map((message) => message[1]) || [],
         });
       }
       return res.status(404).json({
