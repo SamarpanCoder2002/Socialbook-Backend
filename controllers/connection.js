@@ -141,7 +141,12 @@ exports.getSpecificConnections = async (req, res) => {
     ([, tempConnectionType]) => tempConnectionType === connectionType
   );
 
-  const requiredData = filteredData.slice((page - 1) * 10, page * 10);
+  const sortedData = filteredData.sort((first, second) =>
+    first[0].localeCompare(second[0])
+  );
+
+  // ** TODO: Increase Pagination Limit Later after testing
+  const requiredData = sortedData.slice((page - 1) * 4, (page - 1) * 4 + 4);
 
   if (!requiredData.length) {
     return res.status(404).json({
@@ -208,7 +213,8 @@ exports.getAllAvailableUsers = async (req, res) => {
       allDocId = allDocId.filter((id) => !data.includes(id));
     }
 
-    const requiredIds = allDocId.slice((page - 1) * 12, page * 12);
+    // ** TODO: Increase Pagination Limit after testing to 8
+    const requiredIds = allDocId.slice((page - 1) * 4, (page - 1) * 4 + 4);
 
     const allAvailableUsersData = [];
 
@@ -300,7 +306,7 @@ exports.particularUserConnectionStatus = async (req, res) => {
           code: 200,
           status: ConnectionType.connected,
         });
-      }else{
+      } else {
         return res.status(200).json({
           code: 200,
           status: ConnectionType.notConnected,
