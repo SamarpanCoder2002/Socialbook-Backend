@@ -64,7 +64,7 @@ const removeUser = (socketId) => {
 const io = require("socket.io")(server, {
   transports: ["websocket", "polling"],
   cors: {
-    origin: "http://localhost:3000",
+    origin: process.env.FRONTEND_SOCKET_ORIGIN,
   },
 });
 
