@@ -26,6 +26,8 @@ exports.createTextPost = async (req, res) => {
   const textPost = new TextPost(text);
   const formattedPostData = textPost.getFormattedData();
 
+  
+
   return await addPostToDB(formattedPostData, req.auth.id, res);
 };
 
