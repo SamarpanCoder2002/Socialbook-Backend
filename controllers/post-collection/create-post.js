@@ -26,8 +26,6 @@ exports.createTextPost = async (req, res) => {
   const textPost = new TextPost(text);
   const formattedPostData = textPost.getFormattedData();
 
-  
-
   return await addPostToDB(formattedPostData, req.auth.id, res);
 };
 
@@ -112,7 +110,6 @@ exports.createSlidePost = async (req, res) => {
       });
     }
 
-    
     const postData = {};
 
     for (let field in fields) {
@@ -125,7 +122,7 @@ exports.createSlidePost = async (req, res) => {
 
     for (let imgFile in files) {
       const currentTime = Date.now();
-      
+
       postData[Number(imgFile)] = {
         type: PostTypes.Image,
         data: await uploadFileInStorage(

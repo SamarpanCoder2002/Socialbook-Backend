@@ -18,6 +18,10 @@ const {
 const formidable = require("formidable");
 const { uploadFileInStorage } = require("../post-collection/upload-in-storage");
 const fs = require("fs");
+const {
+  messageEncryption,
+  messageDecryption,
+} = require("../encryption-management/encrypt-decrypt-management");
 
 exports.getChatBoxId = (req, res) => {
   try {
@@ -158,11 +162,13 @@ const sendImageMessage = async (fields, res, rawImgFile) => {
     rawImgFile.mimetype
   );
 
+  const encryptedImgDataLink = messageEncryption(uploadedFileLink);
+
   setDoc(
     doc(db, Message.messagesCollection, chatBoxId),
     {
       [Date.now()]: {
-        message: uploadedFileLink,
+        message: encryptedImgDataLink,
         type: ChatMsgTypes.image,
         holder: senderId,
       },
@@ -189,10 +195,16 @@ const sendTextMessage = (fields, res) => {
   const db = getFirestore();
   const { chatBoxId, message, senderId } = fields;
 
+  const encryptedMsgDataLink = messageEncryption(message);
+
   setDoc(
     doc(db, Message.messagesCollection, chatBoxId),
     {
-      [Date.now()]: { message, type: ChatMsgTypes.text, holder: senderId },
+      [Date.now()]: {
+        message: encryptedMsgDataLink,
+        type: ChatMsgTypes.text,
+        holder: senderId,
+      },
     },
     { merge: true }
   )
@@ -274,7 +286,13 @@ exports.getAllChatMessages = (req, res) => {
         return res.status(200).json({
           code: 200,
           message: "Messages fetched",
-          data: messagesCollection?.map((message) => message[1]) || [],
+          data:
+            messagesCollection?.map((message) => {
+              return {
+                ...message[1],
+                message: messageDecryption(message[1].message),
+              };
+            }) || [],
         });
       }
       return res.status(404).json({
