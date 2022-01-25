@@ -18,6 +18,7 @@ const notificationRoutes = require("./routes/notification");
 const messagingRoutes = require("./routes/messaging");
 const { getRealTimeNotifications } = require("./controllers/notification");
 const { SocketEvents } = require("./controllers/types/types");
+const { addPendingMessages } = require("./controllers/messaging/messaging");
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
@@ -78,12 +79,15 @@ io.on(SocketEvents.connection, (socket) => {
   });
 
   socket.on(SocketEvents.sendChatMessage, (chatBoxData) => {
-    const { chatBoxId, receiverId, senderId, message, type } = chatBoxData;
+    const { chatBoxId, receiverId, senderId, message, type, time } = chatBoxData;
     const filtered = activeUsersCollection.filter(
       (iterateUser) => iterateUser.userId === receiverId
     );
 
-    if (!filtered.length) return;
+    if (!filtered.length) {
+      addPendingMessages(receiverId, chatBoxId, message, type, senderId, time);
+      return;
+    }
 
     io.to(filtered[0].socketId).emit(SocketEvents.acceptIncomingChatMessage, {
       message,

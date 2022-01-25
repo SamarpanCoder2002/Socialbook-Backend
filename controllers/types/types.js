@@ -44,6 +44,7 @@ exports.AccountThings = {
   notificationList: "notification-list",
   messaging: "messaging",
   chatPartnerId: "partnerId",
+  pendingMessaging: "pending-messaging",
 };
 
 exports.ChatMsgTypes = {

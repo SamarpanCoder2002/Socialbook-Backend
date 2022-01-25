@@ -223,51 +223,6 @@ const sendTextMessage = (fields, res) => {
     });
 };
 
-// exports.getPaginatedChatMesssages = (req, res) => {
-//   const chatBoxId = req.params.chatBoxId;
-//   const db = getFirestore();
-//   const pageId = Number(req.params.pageId) - 1 || 0;
-
-//   getDoc(doc(db, Message.messagesCollection, chatBoxId))
-//     .then((messages) => {
-//       if (messages.exists) {
-//         const messagesCollection = Object.entries(messages.data()).map(
-//           ([time, message]) => {
-//             return [Number(time), { ...message, time: Number(time) }];
-//           }
-//         );
-
-//         messagesCollection.sort((first, second) => second[0] - first[0]);
-
-//         const paginatedMessagesCollection = messagesCollection.slice(
-//           pageId * 10,
-//           pageId * 10 + 10
-//         );
-
-//         paginatedMessagesCollection.sort(
-//           (first, second) => first[0] - second[0]
-//         );
-
-//         return res.status(200).json({
-//           code: 200,
-//           message: "Messages fetched",
-//           data: paginatedMessagesCollection?.map((message) => message[1]) || [],
-//         });
-//       }
-//       return res.status(404).json({
-//         message: "No Messages Found",
-//         messages: [],
-//       });
-//     })
-//     .catch((err) => {
-//       console.log("error in getAllChatMessages", err);
-
-//       return res.status(500).json({
-//         message: "Internal Server Error",
-//       });
-//     });
-// };
-
 exports.getAllChatMessages = (req, res) => {
   const chatBoxId = req.params.chatBoxId;
   const db = getFirestore();
@@ -346,3 +301,127 @@ exports.getAllChatConnections = (req, res) => {
       });
     });
 };
+
+exports.addPendingMessages = (
+  receiverId,
+  chatBoxId,
+  message,
+  type,
+  partnerId,
+  time
+) => {
+  const db = getFirestore();
+
+  setDoc(
+    doc(
+      db,
+      User.usersCollection,
+      receiverId,
+      AccountThings.pendingMessaging,
+      chatBoxId
+    ),
+    {
+      message: messageEncryption(
+        message.length > 20 ? message.toString().slice(0, 20) + "..." : message
+      ),
+      type,
+      partnerId,
+      time,
+    }
+  ).catch((e) => {
+    console.log("Error in addPendingMessages", e);
+  });
+};
+
+exports.getPendingChatMessages = (req, res) => {
+  const userId = req.auth.id;
+  const db = getFirestore();
+
+  getDocs(
+    query(
+      collection(
+        db,
+        User.usersCollection,
+        userId,
+        AccountThings.pendingMessaging
+      )
+    )
+  )
+    .then((querySnapShot) => {
+      if (querySnapShot.empty)
+        return res.status(404).json({
+          code: 404,
+          message: "No Pending Messages Found",
+          pendingMessages: [],
+        });
+
+      const pendingMessages = querySnapShot.docs.map((doc) => {
+        const { message, type, partnerId, time } = doc.data();
+
+        return {
+          message: messageDecryption(message),
+          type: type,
+          chatBoxId: doc.id,
+          partnerId,
+          time,
+        };
+      });
+      return res.status(200).json({
+        code: 200,
+        message: "Pending messages fetched",
+        pendingMessages: pendingMessages,
+      });
+    })
+    .catch((err) => {
+      console.log("error in getPendingChatMessages", err);
+      return res.status(500).json({
+        code: 500,
+        message: "Internal Server Error",
+      });
+    });
+};
+
+// exports.getPaginatedChatMesssages = (req, res) => {
+//   const chatBoxId = req.params.chatBoxId;
+//   const db = getFirestore();
+//   const pageId = Number(req.params.pageId) - 1 || 0;
+
+//   getDoc(doc(db, Message.messagesCollection, chatBoxId))
+//     .then((messages) => {
+//       if (messages.exists) {
+//         const messagesCollection = Object.entries(messages.data()).map(
+//           ([time, message]) => {
+//             return [Number(time), { ...message, time: Number(time) }];
+//           }
+//         );
+
+//         messagesCollection.sort((first, second) => second[0] - first[0]);
+
+//         const paginatedMessagesCollection = messagesCollection.slice(
+//           pageId * 10,
+//           pageId * 10 + 10
+//         );
+
+//         paginatedMessagesCollection.sort(
+//           (first, second) => first[0] - second[0]
+//         );
+
+//         return res.status(200).json({
+//           code: 200,
+//           message: "Messages fetched",
+//           data: paginatedMessagesCollection?.map((message) => message[1]) || [],
+//         });
+//       }
+//       return res.status(404).json({
+//         message: "No Messages Found",
+//         messages: [],
+//       });
+//     })
+//     .catch((err) => {
+//       console.log("error in getAllChatMessages", err);
+
+//       return res.status(500).json({
+//         message: "Internal Server Error",
+//       });
+//     });
+// };

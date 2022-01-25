@@ -5,6 +5,7 @@ const {
   getAllChatMessages,
   addMessageToChatBox,
   getAllChatConnections,
+  getPendingChatMessages,
 } = require("../controllers/messaging/messaging");
 const router = express.Router();
 
@@ -36,5 +37,7 @@ router.get(
 // );
 
 router.get("/messaging/getAllChatMessages/:userId/:chatBoxId", isSignedIn, isAuthenticated, getAllChatMessages);
+
+router.get("/messaging/getPendingChatMessages/:userId", isSignedIn, isAuthenticated, getPendingChatMessages);
 
 module.exports = router;
