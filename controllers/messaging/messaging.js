@@ -8,6 +8,7 @@ const {
   where,
   addDoc,
   getDoc,
+  deleteDoc,
 } = require("firebase/firestore");
 const {
   User,
@@ -302,6 +303,8 @@ exports.getAllChatConnections = (req, res) => {
     });
 };
 
+
+
 exports.addPendingMessages = (
   receiverId,
   chatBoxId,
@@ -331,6 +334,34 @@ exports.addPendingMessages = (
   ).catch((e) => {
     console.log("Error in addPendingMessages", e);
   });
+};
+
+exports.removePendingMessage = (req, res) => {
+  const db = getFirestore();
+  const chatBoxId = req.params.chatBoxId;
+
+  deleteDoc(
+    doc(
+      db,
+      User.usersCollection,
+      req.auth.id,
+      AccountThings.pendingMessaging,
+      chatBoxId
+    )
+  )
+    .then(() => {
+      return res.status(200).json({
+        code: 200,
+        message: "Pending message removed",
+      });
+    })
+    .catch((e) => {
+      console.log("Error in removePendingMessage", e);
+      return res.status(500).json({
+        code: 500,
+        message: "Internal Server Error",
+      });
+    });
 };
 
 exports.getPendingChatMessages = (req, res) => {
@@ -380,6 +411,22 @@ exports.getPendingChatMessages = (req, res) => {
       });
     });
 };
+
+exports.addPendingChatMessagesWithController = (req, res) => {
+  const { 
+   chatBoxId,
+   message,
+   type,
+   partnerId,
+   time} = req.body;
+ 
+  this.addPendingMessages(req.auth.id, chatBoxId, message, type, partnerId, time);
+
+  return res.status(200).json({
+    code: 200,
+    message: "Pending message added",
+  })
+ }
 
 // exports.getPaginatedChatMesssages = (req, res) => {
 //   const chatBoxId = req.params.chatBoxId;

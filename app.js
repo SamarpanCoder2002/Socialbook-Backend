@@ -94,6 +94,7 @@ io.on(SocketEvents.connection, (socket) => {
       senderId,
       chatBoxId,
       type,
+      time,
     });
   });
 
