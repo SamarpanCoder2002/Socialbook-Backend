@@ -29,4 +29,10 @@ router.post("/googleSignIn", googleSignInWithProvider);
 
 router.post("/signout/:userId", isSignedIn, isAuthenticated, signout);
 
+router.get("/test", (req, res) => {
+  res.json({
+    message: "Auth Route Works",
+  });
+})
+
 module.exports = router;
