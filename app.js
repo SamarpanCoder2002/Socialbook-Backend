@@ -119,3 +119,5 @@ io.on(SocketEvents.connection, (socket) => {
 server.listen(8000, () => {
   console.log("listening on *:8000");
 });
+
+module.exports = server;
