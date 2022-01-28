@@ -64,7 +64,7 @@ exports.createImagePost = async (req, res) => {
 
     form.parse(req, async (err, fields, files) => {
       if (err) {
-        return res.status(404).json({
+        return res.json({
           code: 404,
           error: "Problem with Image",
         });
@@ -90,7 +90,7 @@ exports.createImagePost = async (req, res) => {
     });
   } catch (err) {
     console.log("error in createTextPost", err);
-    return res.status(500).json({
+    return res.json({
       code: 500,
       message: "Internal Server Error",
     });
@@ -104,7 +104,7 @@ exports.createSlidePost = async (req, res) => {
 
   form.parse(req, async (err, fields, files) => {
     if (err) {
-      return res.status(404).json({
+      return res.json({
         code: 404,
         error: "Problem with Image",
       });
@@ -169,13 +169,13 @@ const addPostToDB = async (formattedPostData, uid, res) => {
       uid
     );
 
-    return res.status(200).json({
+    return res.json({
       code: 200,
       message: "Post Created Successfully",
     });
   } catch (err) {
     console.log("error in createTextPost", err);
-    return res.status(500).json({
+    return res.json({
       code: 500,
       message: "Internal Server Error",
     });

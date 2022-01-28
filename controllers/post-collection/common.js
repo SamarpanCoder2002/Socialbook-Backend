@@ -106,13 +106,13 @@ exports.updatePollInformation = async (req, res) => {
     merge: true,
   })
     .then(() => {
-      return res.status(200).json({
+      return res.json({
         code: 200,
         message: "Poll Updated Successfully",
       });
     })
     .catch((err) => {
-      return res.status(500).json({
+      return res.json({
         code: 500,
         message: "Internal Server Error",
       });

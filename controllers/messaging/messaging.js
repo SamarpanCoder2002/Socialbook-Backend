@@ -63,7 +63,7 @@ exports.getChatBoxId = (req, res) => {
           { merge: true }
         );
 
-        return res.status(200).json({
+        return res.json({
           code: 200,
           message: "Chat box already exists",
           chatBoxId: chatBox.docs[0].id,
@@ -108,7 +108,7 @@ exports.getChatBoxId = (req, res) => {
           { merge: true }
         );
 
-        return res.status(200).json({
+        return res.json({
           code: 200,
           message: "Chat box created",
           chatBoxId: docRef.id,
@@ -116,7 +116,7 @@ exports.getChatBoxId = (req, res) => {
       }
     });
   } catch (e) {
-    return res.status(500).json({
+    return res.json({
       code: 500,
       message: "Internal Server Error",
     });
@@ -129,7 +129,7 @@ exports.addMessageToChatBox = (req, res) => {
 
   form.parse(req, async (err, fields, files) => {
     if (err) {
-      return res.status(404).json({
+      return res.json({
         code: 404,
         error: "Problem with incoming Image",
       });
@@ -149,7 +149,7 @@ const sendImageMessage = async (fields, res, rawImgFile) => {
   const { chatBoxId, senderId } = fields;
 
   if (rawImgFile.size > 2000000) {
-    return res.status(400).json({
+    return res.json({
       code: 400,
       message:
         "Last Message Picture size too large... Please upload a Picture Within 2MB",
@@ -177,7 +177,7 @@ const sendImageMessage = async (fields, res, rawImgFile) => {
     { merge: true }
   )
     .then(() => {
-      return res.status(200).json({
+      return res.json({
         code: 200,
         message: "Message added to chat box",
         data: uploadedFileLink,
@@ -185,7 +185,7 @@ const sendImageMessage = async (fields, res, rawImgFile) => {
     })
     .catch((err) => {
       console.log("error in addMessageToChatBox", err);
-      return res.status(500).json({
+      return res.json({
         code: 500,
         message: "Internal Server Error",
       });
@@ -210,14 +210,14 @@ const sendTextMessage = (fields, res) => {
     { merge: true }
   )
     .then(() => {
-      return res.status(200).json({
+      return res.json({
         code: 200,
         message: "Message added to chat box",
       });
     })
     .catch((err) => {
       console.log("error in addMessageToChatBox", err);
-      return res.status(500).json({
+      return res.json({
         code: 500,
         message: "Internal Server Error",
       });
@@ -239,7 +239,7 @@ exports.getAllChatMessages = (req, res) => {
 
         messagesCollection.sort((first, second) => first[0] - second[0]);
 
-        return res.status(200).json({
+        return res.json({
           code: 200,
           message: "Messages fetched",
           data:
@@ -251,7 +251,7 @@ exports.getAllChatMessages = (req, res) => {
             }) || [],
         });
       }
-      return res.status(404).json({
+      return res.json({
         message: "No Messages Found",
         messages: [],
       });
@@ -259,7 +259,7 @@ exports.getAllChatMessages = (req, res) => {
     .catch((err) => {
       console.log("error in getAllChatMessages", err);
 
-      return res.status(500).json({
+      return res.json({
         message: "Internal Server Error",
       });
     });
@@ -288,7 +288,7 @@ exports.getAllChatConnections = (req, res) => {
           partnerProfilePic: partnerProfilePic,
         };
       });
-      return res.status(200).json({
+      return res.json({
         code: 200,
         message: "Chat connections fetched",
         chatConnections: chatConnections,
@@ -296,7 +296,7 @@ exports.getAllChatConnections = (req, res) => {
     })
     .catch((err) => {
       console.log("error in getAllChatConnections", err);
-      return res.status(500).json({
+      return res.json({
         code: 500,
         message: "Internal Server Error",
       });
@@ -350,14 +350,14 @@ exports.removePendingMessage = (req, res) => {
     )
   )
     .then(() => {
-      return res.status(200).json({
+      return res.json({
         code: 200,
         message: "Pending message removed",
       });
     })
     .catch((e) => {
       console.log("Error in removePendingMessage", e);
-      return res.status(500).json({
+      return res.json({
         code: 500,
         message: "Internal Server Error",
       });
@@ -380,7 +380,7 @@ exports.getPendingChatMessages = (req, res) => {
   )
     .then((querySnapShot) => {
       if (querySnapShot.empty)
-        return res.status(404).json({
+        return res.json({
           code: 404,
           message: "No Pending Messages Found",
           pendingMessages: [],
@@ -397,7 +397,7 @@ exports.getPendingChatMessages = (req, res) => {
           time,
         };
       });
-      return res.status(200).json({
+      return res.json({
         code: 200,
         message: "Pending messages fetched",
         pendingMessages: pendingMessages,
@@ -405,7 +405,7 @@ exports.getPendingChatMessages = (req, res) => {
     })
     .catch((err) => {
       console.log("error in getPendingChatMessages", err);
-      return res.status(500).json({
+      return res.json({
         code: 500,
         message: "Internal Server Error",
       });
@@ -422,7 +422,7 @@ exports.addPendingChatMessagesWithController = (req, res) => {
  
   this.addPendingMessages(req.auth.id, chatBoxId, message, type, partnerId, time);
 
-  return res.status(200).json({
+  return res.json({
     code: 200,
     message: "Pending message added",
   })
@@ -453,13 +453,13 @@ exports.addPendingChatMessagesWithController = (req, res) => {
 //           (first, second) => first[0] - second[0]
 //         );
 
-//         return res.status(200).json({
+//         return res.json({
 //           code: 200,
 //           message: "Messages fetched",
 //           data: paginatedMessagesCollection?.map((message) => message[1]) || [],
 //         });
 //       }
-//       return res.status(404).json({
+//       return res.json({
 //         message: "No Messages Found",
 //         messages: [],
 //       });
@@ -467,7 +467,7 @@ exports.addPendingChatMessagesWithController = (req, res) => {
 //     .catch((err) => {
 //       console.log("error in getAllChatMessages", err);
 
-//       return res.status(500).json({
+//       return res.json({
 //         message: "Internal Server Error",
 //       });
 //     });

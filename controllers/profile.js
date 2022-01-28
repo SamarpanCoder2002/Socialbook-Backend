@@ -14,7 +14,7 @@ exports.updateProfileData = (req, res) => {
   getDoc(doc(db, User.usersCollection, req.auth.id))
     .then((snapShot) => {
       if (!snapShot.data()) {
-        return res.status(404).json({
+        return res.json({
           code: 404,
           message: "User Not Found",
         });
@@ -23,7 +23,7 @@ exports.updateProfileData = (req, res) => {
       const { name, description, profilePic } = snapShot.data();
       form.parse(req, async (err, fields, file) => {
         if (err) {
-          return res.status(400).json({
+          return res.json({
             code: 400,
             error: "Problem with Image",
           });
@@ -58,7 +58,7 @@ exports.updateProfileData = (req, res) => {
           }
         } else {
           if (picFile.size > 3000000) {
-            return res.status(400).json({
+            return res.json({
               code: 400,
               message:
                 "Profile Picture size too large... Please upload a Picture Within 3MB",
@@ -102,7 +102,7 @@ exports.updateProfileData = (req, res) => {
     })
     .catch((err) => {
       console.log("error in updateProfileData", err);
-      return res.status(500).json({
+      return res.json({
         code: 500,
         message: "Internal Server Error",
       });
@@ -127,7 +127,7 @@ const updatedProfileDataEndMessage = (
     }
   );
 
-  return res.status(200).json({
+  return res.json({
     code: 200,
     message: "Profile Updated Successfully",
     name: updatedName,
@@ -142,7 +142,7 @@ exports.profileDataCollection = async (req, res) => {
     req.params.targetProfileId
   );
 
-  return res.status(response.code).json(response);
+  return res.json(response);
 };
 
 exports.getProfileData = async (authId, requiredProfileId) => {

@@ -68,13 +68,13 @@ exports.getAllNotifications = async (req, res) => {
       };
     });
 
-    return res.status(200).json({
+    return res.json({
       code: 200,
       message: "Notifications Fetched",
       data: modifiedNotifications,
     });
   }
-  return res.status(404).json({
+  return res.json({
     code: 404,
     message: "No Notifications Found",
   });
@@ -96,14 +96,14 @@ exports.deleteParticularNotification = async (req, res) => {
 
     await updateDoc(docRef, { [Number(notificationId)]: deleteField() });
 
-    return res.status(200).json({
+    return res.json({
       code: 200,
       message: "Notification Deleted",
     });
   } catch (err) {
     console.log("Error in deleting notification", err);
 
-    return res.status(404).json({
+    return res.json({
       code: 500,
       message: "Internal Server Error",
     });

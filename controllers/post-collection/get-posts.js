@@ -22,13 +22,13 @@ exports.getParticularPost = async (req, res) => {
     const postConsizeData = await getPostData(req.params.postId);
     await postHolderDataInclusion(postConsizeData, {});
     
-    return res.status(200).json({
+    return res.json({
       code: 200,
       data: postConsizeData,
     });
   } catch (err) {
     console.log(err);
-    return res.status(500).json({
+    return res.json({
       code: 500,
       message: "Internal Server Error",
     });
@@ -57,13 +57,13 @@ const getPosts = async (page, feed, res, authId) => {
       feed
     );
 
-    return res.status(200).json({
+    return res.json({
       code: 200,
       message: "Feed Data",
       data: actualModifiedPostData,
     });
   } else {
-    return res.status(404).json({
+    return res.json({
       code: 404,
       message: "Feed Data",
       data: [],

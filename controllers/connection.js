@@ -57,7 +57,7 @@ exports.connectionRequest = async (req, res) => {
     }
   );
 
-  return res.status(200).json({
+  return res.json({
     code: 200,
     message: "Connection Request Sent",
   });
@@ -106,7 +106,7 @@ exports.acceptRequest = async (req, res) => {
     }
   );
 
-  return res.status(200).json({
+  return res.json({
     message: "Connection Request Accepted",
   });
 };
@@ -130,7 +130,7 @@ exports.getSpecificConnections = async (req, res) => {
   );
 
   if (!docRef.exists()) {
-    return res.status(404).json({
+    return res.json({
       code: 404,
       message: "No Result Found",
       data: [],
@@ -149,7 +149,7 @@ exports.getSpecificConnections = async (req, res) => {
   const requiredData = sortedData.slice((page - 1) * 4, (page - 1) * 4 + 4);
 
   if (!requiredData.length) {
-    return res.status(404).json({
+    return res.json({
       code: 404,
       message: "No Result Found",
       data: [],
@@ -171,7 +171,7 @@ exports.getSpecificConnections = async (req, res) => {
     }
   }
 
-  return res.status(200).json({
+  return res.json({
     code: 200,
     data: incomingRequestData,
   });
@@ -195,7 +195,7 @@ exports.getAllAvailableUsers = async (req, res) => {
     }
 
     if (!allDocId.length) {
-      return res.status(404).json({
+      return res.json({
         code: 404,
         message: "No Result Found",
         data: [],
@@ -233,14 +233,14 @@ exports.getAllAvailableUsers = async (req, res) => {
       }
     }
 
-    return res.status(200).json({
+    return res.json({
       code: 200,
       message: "All Available Users",
       data: allAvailableUsersData,
     });
   } catch (err) {
     console.log("Error in getAllAvailableUsers", err);
-    return res.status(500).json({
+    return res.json({
       code: 500,
       message: "Internal Server Error",
     });
@@ -283,7 +283,7 @@ exports.particularUserConnectionStatus = async (req, res) => {
   )
     .then((docRef) => {
       if (!docRef.exists()) {
-        return res.status(200).json({
+        return res.json({
           code: 200,
           status: ConnectionType.notConnected,
         });
@@ -292,29 +292,29 @@ exports.particularUserConnectionStatus = async (req, res) => {
       const data = docRef.data();
 
       if (data[queryUserId] === ConnectionType.received) {
-        return res.status(200).json({
+        return res.json({
           code: 200,
           status: ConnectionType.received,
         });
       } else if (data[queryUserId] === ConnectionType.sent) {
-        return res.status(200).json({
+        return res.json({
           code: 200,
           status: ConnectionType.sent,
         });
       } else if (data[queryUserId] === ConnectionType.connected) {
-        return res.status(200).json({
+        return res.json({
           code: 200,
           status: ConnectionType.connected,
         });
       } else {
-        return res.status(200).json({
+        return res.json({
           code: 200,
           status: ConnectionType.notConnected,
         });
       }
     })
     .catch((err) => {
-      return res.status(500).json({
+      return res.json({
         code: 500,
         message: "Internal Server Error",
       });
@@ -377,14 +377,14 @@ const removeCommonPart = async (
         oppositeUserId
       );
 
-    return res.status(200).json({
+    return res.json({
       code: 200,
       message: "Operation Done Successfully 😳",
     });
   } catch (err) {
     console.log("error in removeCommonPart: ", err);
 
-    return res.status(500).json({
+    return res.json({
       code: 500,
       message: "Internal Server Error 😔",
     });

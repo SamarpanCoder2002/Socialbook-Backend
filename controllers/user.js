@@ -15,7 +15,7 @@ const formidable = require("formidable");
 const fs = require("fs");
 
 exports.userNotPresent = (req, res) => {
-  return res.status(404).json({
+  return res.json({
     message: "User Not Present",
   });
 };
@@ -31,7 +31,7 @@ exports.isUserPresent = (req, res, next) => {
           next();
         } else {
           const { name, description, profilePic } = snapShot.data();
-          res.status(200).json({
+          res.json({
             code: 200,
             message: "User already present",
             isUserPresent: true,
@@ -46,7 +46,7 @@ exports.isUserPresent = (req, res, next) => {
           "Error: User controller user present email error is: ",
           err
         );
-        res.status(500).json({
+        res.json({
           code: 500,
           message: "Internal Server Error",
         });
@@ -54,7 +54,7 @@ exports.isUserPresent = (req, res, next) => {
   } catch (err) {
     res.clearCookie(process.env.AUTH_TOKEN);
 
-    return res.status(403).json({
+    return res.json({
       code: 403,
       message: "Session Expired. Please Sign In Again",
     });
@@ -66,14 +66,14 @@ exports.createUserAccount = async (req, res) => {
     const auth = getAuth();
 
     if (!auth.currentUser) {
-      return res.status(403).json({
+      return res.json({
         code: 403,
         message: "Session Expired. Please Sign In Again",
       });
     }
 
     if (!getAuth()) {
-      return res.status(403).json({
+      return res.json({
         code: 403,
         message: "Session Expired. Please Sign In Again",
       });
@@ -84,7 +84,7 @@ exports.createUserAccount = async (req, res) => {
 
     form.parse(req, async (err, fields, file) => {
       if (err) {
-        return res.status(400).json({
+        return res.json({
           error: "Problem with Image",
         });
       }
@@ -97,7 +97,7 @@ exports.createUserAccount = async (req, res) => {
         });
       } else {
         if (picFile.size > 3000000) {
-          return res.status(400).json({
+          return res.json({
             code: 400,
             message:
               "Profile Picture size too large... Please upload a Picture Within 3MB",
@@ -119,7 +119,7 @@ exports.createUserAccount = async (req, res) => {
     });
   } catch (err) {
     console.log("Error in Create User profile: ", err);
-    return res.status(500).json({
+    return res.json({
       code: 500,
       message: "Internal Server Error",
     });
@@ -143,7 +143,7 @@ const setProfileDataInDatabase = async (req, res, formExtractedData) => {
 
   await getSuggestedPosts(db, req.auth.id);
 
-  return res.status(200).json({
+  return res.json({
     code: 200,
     message: "User Account Created Successfully",
   });

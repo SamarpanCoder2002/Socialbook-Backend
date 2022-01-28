@@ -29,14 +29,14 @@ const engagementInclusion = async (postId, engagementDocId, newData, res) => {
       { merge: true }
     );
 
-    res.status(200).json({
+    res.json({
       code: 200,
       message: "Operation Done",
     });
   } catch (err) {
     console.log("error in engagementInclusion", err);
 
-    res.status(500).json({
+    res.json({
       code: 500,
       message: "Internal Server Error",
     });

@@ -11,16 +11,13 @@ const {
   sendEmailVerification,
   GoogleAuthProvider,
   signInWithCredential,
-  signInWithPopup,
-  signInWithCustomToken,
-  signInWithRedirect,
 } = require("firebase/auth");
 
 exports.signup = (req, res) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    return res.status(422).json({
+    return res.json({
       error: `Error in ${errors.array()[0].param}`,
     });
   }
@@ -33,7 +30,7 @@ exports.signup = (req, res) => {
       const user = userCredential.user;
 
       sendEmailVerification(user).then(() => {
-        return res.status(200).json({
+        return res.json({
           code: 200,
           message: "Sign up successful",
         });
@@ -53,7 +50,7 @@ exports.signup = (req, res) => {
       )
         errorMsg = "Network Error";
 
-      return res.status(422).json({
+      return res.json({
         code: 422,
         error: errorMsg,
       });
@@ -64,7 +61,7 @@ exports.signin = (req, res) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    return res.status(422).json({
+    return res.json({
       error: `Error in ${errors.array()[0].param}`,
     });
   }
@@ -86,14 +83,14 @@ exports.signin = (req, res) => {
             expire: new Date() + 9999,
           });
 
-          return res.status(200).json({
+          return res.json({
             code: 200,
             token,
             message: "Sign in successful",
             user: user.uid,
           });
         } else {
-          return res.status(422).json({
+          return res.json({
             code: 422,
             error: "Email not verified. Check your email",
           });
@@ -111,7 +108,7 @@ exports.signin = (req, res) => {
         else if (error.message === "Firebase: Error (auth/wrong-password).")
           errorMessage = "Wrong Password";
 
-        return res.status(404).json({
+        return res.json({
           code: 404,
           error: errorMessage,
         });
@@ -135,20 +132,20 @@ exports.googleSignInWithProvider = (req, res) => {
           expire: new Date() + 9999,
         });
 
-        return res.status(200).json({
+        return res.json({
           token,
           message: "Sign in successful",
           user: user.uid,
         });
       } else {
-        return res.status(422).json({
+        return res.json({
           error: "Email not verified",
         });
       }
     })
     .catch((error) => {
       console.log("error in google sign in", error);
-      res.status(500).json({
+      res.json({
         code: 500,
         error: "Internal Server Error",
       });
@@ -162,13 +159,13 @@ exports.signout = (req, res) => {
   auth
     .signOut()
     .then(() => {
-      return res.status(200).json({
+      return res.json({
         code: 200,
         message: "Signout successful",
       });
     })
     .catch((error) => {
-      return res.status(422).json({
+      return res.json({
         code: 422,
         error: error.message,
       });
@@ -185,7 +182,7 @@ exports.isAuthenticated = (req, res, next) => {
   if (req.body && req.auth && req.params.userId === req.auth.id) {
     next();
   } else {
-    return res.status(401).json({
+    return res.json({
       error: "User not Authenticated",
     });
   }
