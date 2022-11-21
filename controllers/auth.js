@@ -1,6 +1,8 @@
 const { validationResult } = require("express-validator");
 var jwt = require("jsonwebtoken");
-var expressJwt = require("express-jwt");
+var {expressjwt: expressJwt} = require("express-jwt");
+
+
 
 const {
   getAuth,
