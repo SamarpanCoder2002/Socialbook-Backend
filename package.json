@@ -4,7 +4,7 @@
   "description": "Backend for Socialbook Web app",
   "main": "api.js",
   "scripts": {
-    "start": "nodemon api.js"
+    "start": "node api.js"
   },
   "author": "Samarpan Dasgupta",
   "license": "MIT",
