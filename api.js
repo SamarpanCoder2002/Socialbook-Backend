@@ -48,76 +48,85 @@ app.use("/api", postRoutes);
 app.use("/api", notificationRoutes);
 app.use("/api", messagingRoutes);
 
-// ** Socket IO Implementation
-const server = require("http").createServer(app);
-let activeUsersCollection = [];
-const addUser = (userId, socketId) => {
-  !activeUsersCollection.some((user) => user.userId === userId) &&
-    activeUsersCollection.push({ userId, socketId });
-};
-
-const removeUser = (socketId) => {
-  activeUsersCollection = activeUsersCollection.filter(
-    (user) => user.socketId !== socketId
-  );
-};
-
-const io = require("socket.io")(server, {
-  transports: ["websocket", "polling"],
-  cors: {
-    origin: process.env.FRONTEND_SOCKET_ORIGIN,
-  },
-});
-
-io.on(SocketEvents.connection, (socket) => {
-  console.log("New User Conected");
-  let realTimeNotificationUnsubscribe;
-
-  socket.on(SocketEvents.addUser, (userId) => {
-    addUser(userId, socket.id);
-    io.emit(SocketEvents.getActiveUsers, activeUsersCollection);
-  });
-
-  socket.on(SocketEvents.sendChatMessage, (chatBoxData) => {
-    const { chatBoxId, receiverId, senderId, message, type, time } = chatBoxData;
-    const filtered = activeUsersCollection.filter(
-      (iterateUser) => iterateUser.userId === receiverId
-    );
-
-    if (!filtered.length) {
-      addPendingMessages(receiverId, chatBoxId, message, type, senderId, time);
-      return;
-    }
-
-    io.to(filtered[0].socketId).emit(SocketEvents.acceptIncomingChatMessage, {
-      message,
-      senderId,
-      chatBoxId,
-      type,
-      time,
-    });
-  });
-
-  socket.on(SocketEvents.realTimeNotification, async (user) => {
-    const unsubscribe = await getRealTimeNotifications(
-      user.userId,
-      io,
-      activeUsersCollection.filter(
-        (iterateUser) => iterateUser.userId === user.userId
-      )
-    );
-    realTimeNotificationUnsubscribe = unsubscribe;
-  });
-
-  socket.on(SocketEvents.disconnect, () => {
-    console.log("user disconnected");
-    removeUser(socket.id);
-    realTimeNotificationUnsubscribe && realTimeNotificationUnsubscribe();
-  });
-});
 
 const PORT = process.env.PORT || 8000;
 
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`listening on *${PORT}`);
 });
+
+
+
+// // ** Socket IO Implementation
+// const server = require("http").createServer(app);
+// let activeUsersCollection = [];
+// const addUser = (userId, socketId) => {
+//   !activeUsersCollection.some((user) => user.userId === userId) &&
+//     activeUsersCollection.push({ userId, socketId });
+// };
+
+// const removeUser = (socketId) => {
+//   activeUsersCollection = activeUsersCollection.filter(
+//     (user) => user.socketId !== socketId
+//   );
+// };
+
+// const io = require("socket.io")(server, {
+//   transports: ["websocket", "polling"],
+//   cors: {
+//     origin: process.env.FRONTEND_SOCKET_ORIGIN,
+//   },
+// });
+
+// io.on(SocketEvents.connection, (socket) => {
+//   console.log("New User Conected");
+//   let realTimeNotificationUnsubscribe;
+
+//   socket.on(SocketEvents.addUser, (userId) => {
+//     addUser(userId, socket.id);
+//     io.emit(SocketEvents.getActiveUsers, activeUsersCollection);
+//   });
+
+//   socket.on(SocketEvents.sendChatMessage, (chatBoxData) => {
+//     const { chatBoxId, receiverId, senderId, message, type, time } = chatBoxData;
+//     const filtered = activeUsersCollection.filter(
+//       (iterateUser) => iterateUser.userId === receiverId
+//     );
+
+//     if (!filtered.length) {
+//       addPendingMessages(receiverId, chatBoxId, message, type, senderId, time);
+//       return;
+//     }
+
+//     io.to(filtered[0].socketId).emit(SocketEvents.acceptIncomingChatMessage, {
+//       message,
+//       senderId,
+//       chatBoxId,
+//       type,
+//       time,
+//     });
+//   });
+
+//   socket.on(SocketEvents.realTimeNotification, async (user) => {
+//     const unsubscribe = await getRealTimeNotifications(
+//       user.userId,
+//       io,
+//       activeUsersCollection.filter(
+//         (iterateUser) => iterateUser.userId === user.userId
+//       )
+//     );
+//     realTimeNotificationUnsubscribe = unsubscribe;
+//   });
+
+//   socket.on(SocketEvents.disconnect, () => {
+//     console.log("user disconnected");
+//     removeUser(socket.id);
+//     realTimeNotificationUnsubscribe && realTimeNotificationUnsubscribe();
+//   });
+// });
+
+// const PORT = process.env.PORT || 8000;
+
+// server.listen(PORT, () => {
+//   console.log(`listening on *${PORT}`);
+// });
