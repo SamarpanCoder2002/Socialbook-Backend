@@ -48,6 +48,8 @@ app.use("/api", postRoutes);
 app.use("/api", notificationRoutes);
 app.use("/api", messagingRoutes);
 
+// "socket.io": "^4.5.3"
+
 
 const PORT = process.env.PORT || 8000;
 
